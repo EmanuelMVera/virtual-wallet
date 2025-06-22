@@ -1,9 +1,12 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
+import { register, login } from "../controllers/authController.js";
 
 const router = Router();
 
-router.get("/user", (req: Request, res: Response, next: NextFunction) => {
-  res.status(200).json({ message: "User routes are working!" });
-});
+// Ruta para registrar un nuevo usuario
+router.post("/register", register);
+
+// Ruta para iniciar sesión y obtener un token JWT
+router.post("/login", login);
 
 export default router;

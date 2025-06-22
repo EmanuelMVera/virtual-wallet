@@ -2,8 +2,9 @@ import { Request, Response, Router } from "express";
 
 const router = Router();
 
-router.get("/account", (req: Request, res: Response) => {
-  res.status(200).json({ message: "Account routes are working!" });
+// Ruta para obtener el balance de la cuenta
+router.get("/balance", (req: Request, res: Response) => {
+  res.status(200).json({ message: "Balance routes are working!" });
 });
 
 export default router;
