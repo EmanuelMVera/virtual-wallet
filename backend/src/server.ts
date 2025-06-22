@@ -12,7 +12,7 @@ const HOST = process.env.HOST || "localhost";
 initDatabase()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://${HOST}:${PORT}/`);
+      console.log(`🚀 Server running at http://${HOST}:${PORT}/api`);
     });
   })
   .catch((err) => {

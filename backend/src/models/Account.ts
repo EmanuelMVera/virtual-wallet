@@ -19,6 +19,14 @@ export class Account
   // Relación con otros modelos
   static associate(models: any) {
     this.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
+    this.hasMany(models.Transaction, {
+      foreignKey: "senderAccountId",
+      as: "sentTransactions",
+    });
+    this.hasMany(models.Transaction, {
+      foreignKey: "receiverAccountId",
+      as: "receivedTransactions",
+    });
   }
 }
 export default (sequelize: Sequelize) => {

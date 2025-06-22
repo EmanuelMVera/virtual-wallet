@@ -10,23 +10,16 @@ interface UserAttributes {
 
 interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
-// Definición del modelo de usuario
-// Este modelo representa a un usuario en la base de datos y contiene los campos necesarios para la autenticación y autorización.
-// Incluye métodos para comparar contraseñas y hashear la contraseña antes de guardarla en la base de datos.
-// Utiliza bcrypt para el hashing de contraseñas y Sequelize como ORM para interactuar con la base de datos.
-// Además, implementa hooks de Sequelize para asegurar que las contraseñas se hashean antes
-export class User
-  extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes
-{
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
+export class User extends Model<UserAttributes, UserCreationAttributes> {
+  // Declaraciones solo para tipado, no sobrescriben getters/setters
+  declare id: number;
+  declare name: string;
+  declare email: string;
+  declare password: string;
 
   // Método para comparar contraseñas
   public async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
+    return bcrypt.compare(candidatePassword, this.getDataValue("password"));
   }
 
   // Relación con otros modelos
@@ -69,15 +62,20 @@ export default (sequelize: Sequelize) => {
       // Hooks de Sequelize para hashear la contraseña antes de guardar
       hooks: {
         beforeCreate: async (user) => {
-          if (user.password) {
+          console.log("Ejecutando hook beforeCreate para User");
+          const password = user.getDataValue("password");
+          if (password) {
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(user.password, salt);
+            const hash = await bcrypt.hash(password, salt);
+            user.setDataValue("password", hash);
           }
         },
         beforeUpdate: async (user) => {
-          if (user.password && user.changed("password")) {
+          const password = user.getDataValue("password");
+          if (password && user.changed("password")) {
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(user.password, salt);
+            const hash = await bcrypt.hash(password, salt);
+            user.setDataValue("password", hash);
           }
         },
       },

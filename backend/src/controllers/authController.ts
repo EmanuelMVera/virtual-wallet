@@ -5,18 +5,18 @@ import dotenv from "dotenv";
 
 dotenv.config(); // Cargar variables de entorno
 
-const { User } = models;
-
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password } = req.body;
+
+    // Obtén el modelo User dinámicamente
+    const User = models.User;
 
     // 1. Verificar si el usuario ya existe
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res
-        .status(409)
-        .json({ message: "User with this email already exists." });
+      res.status(409).json({ message: "User with this email already exists." });
+      return;
     }
 
     // 2. Crear el nuevo usuario (el hook beforeCreate en el modelo hashea la contraseña)
@@ -39,35 +39,47 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
+
+    // Obtén el modelo User dinámicamente
+    const User = models.User;
 
     // 1. Buscar al usuario por email
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials." });
+      res.status(401).json({ message: "Invalid credentials." });
+      return;
     }
 
     // 2. Comparar la contraseña (usando el método del modelo)
+    if (!(user as any).password) {
+      res.status(500).json({ message: "User password not set in database." });
+      return;
+    }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials." });
+      res.status(401).json({ message: "Invalid credentials." });
+      return;
     }
 
     // 3. Generar el JWT
-    const payload = {
-      id: user.id,
-      email: user.email,
-      // Puedes añadir más datos aquí, pero evita información sensible
+    const payload: { id: number; email: string } = {
+      id: Number(user.id),
+      email: String(user.email),
     };
 
-    // La clave secreta debe ser una variable de entorno y muy segura
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET as string,
-      { expiresIn: process.env.JWT_EXPIRATION_TIME || "1h" } // Por ejemplo, 1 hora
-    );
+    // Usa el secreto como string directamente
+    const secret = process.env.JWT_SECRET as string;
+
+    const expiresIn = process.env.JWT_EXPIRATION_TIME
+      ? Number(process.env.JWT_EXPIRATION_TIME)
+      : 3600; // valor por defecto: 1 hora
+
+    const token = jwt.sign(payload, secret, {
+      expiresIn,
+    });
 
     res.status(200).json({
       message: "Logged in successfully!",
