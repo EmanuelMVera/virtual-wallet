@@ -1,15 +1,15 @@
 import { Request, Response, Router } from "express";
+import {
+  createTransaction,
+  listUserTransactions,
+} from "../controllers/transactionController.js";
 
 const router = Router();
 
-// Rutas para opteraciones de transacciones
-router.get("/", (req: Request, res: Response) => {
-  res.status(200).json({ message: "Transaction routes are working!" });
-});
-
 // Ruta para crear una nueva transacción
-router.post("/transfer", (req: Request, res: Response) => {
-  res.status(200).json({ message: "Transfer routes are working!" });
-});
+router.post("/transfer", createTransaction);
+
+// Ruta para listar transacciones del usuario autenticado
+router.get("/list", listUserTransactions);
 
 export default router;

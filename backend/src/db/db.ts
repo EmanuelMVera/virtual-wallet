@@ -1,4 +1,3 @@
-// src/config/db.ts
 import { Sequelize } from "sequelize";
 import loadModels from "../models/_loader.js";
 import { defineRelations } from "./relations.js";

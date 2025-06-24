@@ -3,7 +3,7 @@ import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 interface AccountAttributes {
   id: number;
   userId: number;
-  balance: number;
+  balance: string; // Cambiado de number a string
 }
 
 interface AccountCreationAttributes extends Optional<AccountAttributes, "id"> {}
@@ -14,7 +14,7 @@ export class Account
 {
   public id!: number;
   public userId!: number;
-  public balance!: number;
+  public balance!: string; // Cambiado de number a string
 
   // Relación con otros modelos
   static associate(models: any) {

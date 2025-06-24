@@ -4,7 +4,7 @@ interface TransactionAttributes {
   id: number;
   senderAccountId: number;
   receiverAccountId: number;
-  amount: number;
+  amount: string; // Cambiado de number a string
   timestamp: Date;
 }
 
@@ -18,7 +18,7 @@ export class Transaction
   public id!: number;
   public senderAccountId!: number;
   public receiverAccountId!: number;
-  public amount!: number;
+  public amount!: string; // Cambiado de number a string
   public timestamp!: Date;
 
   //relacion con otros modelos

@@ -22,9 +22,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // 2. Crear el nuevo usuario (el hook beforeCreate en el modelo hashea la contraseña)
     const newUser = await User.create({ name, email, password });
 
-    // 3. Opcional: Crear una cuenta inicial para el nuevo usuario
-    // Suponiendo que quieres crear una cuenta por defecto para cada usuario
-    // const newAccount = await Account.create({ userId: newUser.id, balance: 0.00 });
+    // Crear una cuenta inicial para el nuevo usuario
+    const Account = models.Account;
+    await Account.create({ userId: newUser.id, balance: 0.0 });
 
     res.status(201).json({
       message: "User registered successfully!",

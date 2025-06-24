@@ -1,0 +1,123 @@
+import { Request, Response } from "express";
+import { models } from "../db/db.js";
+import { Op } from "sequelize"; // <--- Agrega esta línea
+
+// Crear una transacción
+export const createTransaction = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sequelize = models.Account.sequelize;
+  const t = await sequelize.transaction();
+  try {
+    const { senderAccountId, receiverAccountId, amount } = req.body;
+    const userId = req.user?.id;
+
+    // Verifica que el usuario sea dueño de la cuenta de origen
+    const senderAccount = await models.Account.findOne({
+      where: { id: senderAccountId, userId },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!senderAccount) {
+      await t.rollback();
+      res.status(403).json({ message: "Not authorized for this account." });
+      return;
+    }
+
+    // Verifica que la cuenta de destino exista
+    const receiverAccount = await models.Account.findOne({
+      where: { id: receiverAccountId },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (!receiverAccount) {
+      await t.rollback();
+      res.status(404).json({ message: "Receiver account not found." });
+      return;
+    }
+
+    // Verifica saldo suficiente
+    if (Number(senderAccount.balance) < Number(amount)) {
+      await t.rollback();
+      res.status(400).json({ message: "Insufficient balance." });
+      return;
+    }
+
+    // Realiza la transferencia (asegúrate de guardar como string)
+    senderAccount.balance = (
+      Number(senderAccount.balance) - Number(amount)
+    ).toFixed(2);
+    receiverAccount.balance = (
+      Number(receiverAccount.balance) + Number(amount)
+    ).toFixed(2);
+    await senderAccount.save({ transaction: t });
+    await receiverAccount.save({ transaction: t });
+
+    // Crea la transacción
+    const transaction = await models.Transaction.create(
+      {
+        senderAccountId,
+        receiverAccountId,
+        amount,
+      },
+      { transaction: t }
+    );
+
+    await t.commit();
+
+    res.status(201).json({
+      message: "Transaction completed successfully.",
+      transaction,
+      senderAccount: {
+        id: senderAccount.id,
+        balance: senderAccount.balance,
+      },
+      receiverAccount: {
+        id: receiverAccount.id,
+        balance: receiverAccount.balance,
+      },
+    });
+  } catch (error: any) {
+    if (t) await t.rollback();
+    res.status(500).json({
+      message: "Server error while creating transaction.",
+      error: error.message,
+    });
+  }
+};
+
+export const listUserTransactions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: "User not authenticated." });
+      return;
+    }
+
+    // Busca todas las cuentas del usuario
+    const accounts = await models.Account.findAll({ where: { userId } });
+    const accountIds = accounts.map((acc: any) => acc.id);
+
+    // Busca transacciones donde el usuario sea emisor o receptor
+    const transactions = await models.Transaction.findAll({
+      where: {
+        [Op.or]: [
+          { senderAccountId: accountIds },
+          { receiverAccountId: accountIds },
+        ],
+      },
+      order: [["timestamp", "DESC"]],
+    });
+
+    res.status(200).json({ transactions });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Server error while listing transactions.",
+      error: error.message,
+    });
+  }
+};
