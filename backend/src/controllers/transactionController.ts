@@ -25,12 +25,27 @@ export const createTransaction = async (
       return;
     }
 
-    // Verifica que la cuenta de destino exista
-    const receiverAccount = await models.Account.findOne({
-      where: { id: receiverAccountId },
-      transaction: t,
-      lock: t.LOCK.UPDATE,
-    });
+    // Busca la cuenta destino por id, alias o cbu
+    let receiverAccount;
+    if (receiverAccountId) {
+      receiverAccount = await models.Account.findOne({
+        where: { id: receiverAccountId },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+    } else if (req.body.receiverAlias) {
+      receiverAccount = await models.Account.findOne({
+        where: { alias: req.body.receiverAlias },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+    } else if (req.body.receiverCbu) {
+      receiverAccount = await models.Account.findOne({
+        where: { cbu: req.body.receiverCbu },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+    }
     if (!receiverAccount) {
       await t.rollback();
       res.status(404).json({ message: "Receiver account not found." });

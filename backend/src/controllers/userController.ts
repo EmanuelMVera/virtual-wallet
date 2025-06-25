@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { models } from "../db/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { Op } from "sequelize"; // <--- Agrega esta línea
 
 dotenv.config(); // Cargar variables de entorno
 
@@ -22,9 +23,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // 2. Crear el nuevo usuario (el hook beforeCreate en el modelo hashea la contraseña)
     const newUser = await User.create({ name, email, password });
 
-    // Crear una cuenta inicial para el nuevo usuario
+    // Crear una cuenta inicial para el nuevo usuario con alias y cbu únicos
     const Account = models.Account;
-    await Account.create({ userId: newUser.id, balance: 0.0 });
+    let alias: string, cbu: string;
+    let isUnique = false;
+    do {
+      alias = `alias${Math.random().toString(36).substring(2, 10)}`;
+      cbu = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+      const exists = await Account.findOne({
+        where: { [Op.or]: [{ alias }, { cbu }] }, // <--- Usa Op importado
+      });
+      isUnique = !exists;
+    } while (!isUnique);
+
+    await Account.create({
+      userId: newUser.id,
+      balance: 0.0,
+      alias,
+      cbu,
+    });
 
     res.status(201).json({
       message: "User registered successfully!",
@@ -92,4 +109,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       .status(500)
       .json({ message: "Server error during login.", error: error.message });
   }
+};
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  res.status(200).json({
+    message:
+      "Logged out successfully. Please remove your token on client side.",
+  });
 };

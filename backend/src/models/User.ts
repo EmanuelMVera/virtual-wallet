@@ -25,6 +25,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   // Relación con otros modelos
   static associate(models: any) {
     this.hasMany(models.Account, { foreignKey: "userId", as: "accounts" });
+    this.hasMany(models.BankAccount, {
+      foreignKey: "userId",
+      as: "bankAccounts",
+    });
   }
 }
 

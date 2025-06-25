@@ -19,12 +19,10 @@ export const registerBankAccount = async (req: Request, res: Response) => {
     });
     res.status(201).json({ message: "Bank account registered.", bankAccount });
   } catch (error: any) {
-    res
-      .status(500)
-      .json({
-        message: "Error registering bank account.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error registering bank account.",
+      error: error.message,
+    });
   }
 };
 
@@ -56,25 +54,51 @@ export const depositToWallet = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Wallet account not found." });
       return;
     }
-    if (Number(bankAccount.balance) < Number(amount)) {
+
+    // LOG para depuración
+    console.log(
+      "BankAccount balance:",
+      bankAccount.get("balance"),
+      "Amount:",
+      amount
+    );
+
+    // Convierte los balances a número de forma segura (soporta string y number)
+    const bankBalance = parseFloat(bankAccount.get("balance") ?? "0");
+    const walletBalance = parseFloat(walletAccount.get("balance") ?? "0");
+    const depositAmount =
+      typeof amount === "string" ? parseFloat(amount) : Number(amount);
+
+    console.log(
+      "Parsed bankBalance:",
+      bankBalance,
+      "Parsed depositAmount:",
+      depositAmount
+    );
+
+    if (isNaN(bankBalance) || isNaN(walletBalance) || isNaN(depositAmount)) {
+      res.status(400).json({ message: "Invalid balance or amount." });
+      return;
+    }
+
+    if (bankBalance < depositAmount) {
       res.status(400).json({ message: "Insufficient bank account balance." });
       return;
     }
 
     // Realiza el depósito
-    bankAccount.balance = (
-      Number(bankAccount.balance) - Number(amount)
-    ).toFixed(2);
-    walletAccount.balance = (
-      Number(walletAccount.balance) + Number(amount)
-    ).toFixed(2);
+    bankAccount.set("balance", (bankBalance - depositAmount).toFixed(2));
+    walletAccount.set("balance", (walletBalance + depositAmount).toFixed(2));
     await bankAccount.save();
     await walletAccount.save();
 
     res.status(200).json({
       message: "Deposit successful.",
-      bankAccount: { id: bankAccount.id, balance: bankAccount.balance },
-      walletAccount: { id: walletAccount.id, balance: walletAccount.balance },
+      bankAccount: { id: bankAccount.id, balance: bankAccount.get("balance") },
+      walletAccount: {
+        id: walletAccount.id,
+        balance: walletAccount.get("balance"),
+      },
     });
   } catch (error: any) {
     res

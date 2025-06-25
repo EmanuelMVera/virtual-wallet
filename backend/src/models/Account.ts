@@ -3,20 +3,17 @@ import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 interface AccountAttributes {
   id: number;
   userId: number;
-  balance: string; // Cambiado de number a string
+  balance: string;
+  alias?: string;
+  cbu?: string;
 }
 
 interface AccountCreationAttributes extends Optional<AccountAttributes, "id"> {}
 
-export class Account
-  extends Model<AccountAttributes, AccountCreationAttributes>
-  implements AccountAttributes
-{
-  public id!: number;
-  public userId!: number;
-  public balance!: string; // Cambiado de number a string
-
-  // Relación con otros modelos
+export class Account extends Model<
+  AccountAttributes,
+  AccountCreationAttributes
+> {
   static associate(models: any) {
     this.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
     this.hasMany(models.Transaction, {
@@ -41,14 +38,24 @@ export default (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "users", // Referencia a la tabla 'users'
+          model: "users",
           key: "id",
         },
       },
       balance: {
-        type: DataTypes.DECIMAL(10, 2), // Por ejemplo, 10 dígitos en total, 2 decimales
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
         defaultValue: 0.0,
+      },
+      alias: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+      },
+      cbu: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
       },
     },
     {

@@ -5,22 +5,16 @@ interface BankAccountAttributes {
   userId: number;
   bankName: string;
   accountNumber: string;
-  balance: string;
+  balance: string; // Debe ser string
 }
 
 interface BankAccountCreationAttributes
   extends Optional<BankAccountAttributes, "id"> {}
 
-export class BankAccount
-  extends Model<BankAccountAttributes, BankAccountCreationAttributes>
-  implements BankAccountAttributes
-{
-  public id!: number;
-  public userId!: number;
-  public bankName!: string;
-  public accountNumber!: string;
-  public balance!: string;
-
+export class BankAccount extends Model<
+  BankAccountAttributes,
+  BankAccountCreationAttributes
+> {
   static associate(models: any) {
     this.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
   }
@@ -51,9 +45,9 @@ export default (sequelize: Sequelize) => {
         allowNull: false,
       },
       balance: {
-        type: DataTypes.DECIMAL(12, 2),
+        type: DataTypes.STRING, // Cambiado a tipo string
         allowNull: false,
-        defaultValue: 1000.0, // saldo ficticio inicial
+        defaultValue: "1000.00", // saldo ficticio inicial como string
       },
     },
     {
