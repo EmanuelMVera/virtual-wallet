@@ -18,6 +18,9 @@ export class BankAccount extends Model<
   BankAccountAttributes,
   BankAccountCreationAttributes
 > {
+  /**
+   * Define la relación con el modelo User.
+   */
   static associate(models: any) {
     this.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
   }

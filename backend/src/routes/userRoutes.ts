@@ -3,13 +3,22 @@ import { register, login, logout } from "../controllers/userController.js";
 
 const router = Router();
 
-// Ruta para registrar un nuevo usuario
+/**
+ * @route POST /users/register
+ * @desc Registra un nuevo usuario
+ */
 router.post("/register", register);
 
-// Ruta para iniciar sesión y obtener un token JWT
+/**
+ * @route POST /users/login
+ * @desc Inicia sesión y obtiene un token JWT
+ */
 router.post("/login", login);
 
-// Ruta para cerrar sesión
+/**
+ * @route POST /users/logout
+ * @desc Cierra la sesión del usuario
+ */
 router.post("/logout", logout);
 
 export default router;

@@ -17,6 +17,9 @@ export class Account extends Model<
   AccountAttributes,
   AccountCreationAttributes
 > {
+  /**
+   * Define las relaciones con otros modelos.
+   */
   static associate(models: any) {
     this.belongsTo(models.User, { foreignKey: "userId", as: "owner" });
     this.hasMany(models.Transaction, {

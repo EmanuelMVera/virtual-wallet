@@ -6,22 +6,22 @@ import { Request, Response } from "express";
 declare global {
   namespace Express {
     interface Request {
-      user?: CustomJwtPayload; // Debe coincidir con la declaración global
+      user?: CustomJwtPayload;
     }
   }
 }
 
+/**
+ * Obtiene el balance de la cuenta del usuario autenticado.
+ */
 export const balance = async (req: Request, res: Response) => {
   try {
-    // Obtén el modelo Account dinámicamente
     const Account = models.Account;
-
-    // 1. Obtener el balance de la cuenta del usuario autenticado
     if (!req.user || !req.user.id) {
       res.status(401).json({ message: "User not authenticated." });
       return;
     }
-    const userId = req.user.id; // Asumiendo que el ID del usuario está en req.user.id
+    const userId = req.user.id;
     const account = await Account.findOne({ where: { userId } });
 
     if (!account) {
@@ -31,7 +31,7 @@ export const balance = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "Account balance retrieved successfully.",
-      balance: account.balance, // <-- asegúrate de incluir el balance aquí
+      balance: account.balance,
     });
   } catch (error: any) {
     console.error("Error retrieving account balance:", error);
@@ -42,6 +42,9 @@ export const balance = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Crea una nueva cuenta virtual para el usuario autenticado.
+ */
 export const createAccount = async (req: Request, res: Response) => {
   try {
     if (!req.user || !req.user.id) {
@@ -50,7 +53,7 @@ export const createAccount = async (req: Request, res: Response) => {
     }
     const Account = models.Account;
 
-    // Generar alias y cbu únicos
+    // Genera alias y cbu únicos
     let alias: string, cbu: string;
     let isUnique = false;
     do {
@@ -80,6 +83,9 @@ export const createAccount = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Lista todas las cuentas virtuales del usuario autenticado.
+ */
 export const listAccounts = async (req: Request, res: Response) => {
   try {
     if (!req.user || !req.user.id) {
@@ -97,6 +103,9 @@ export const listAccounts = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Busca una cuenta por alias o CBU.
+ */
 export const findAccount = async (req: Request, res: Response) => {
   try {
     const { alias, cbu } = req.query;
@@ -120,7 +129,6 @@ export const findAccount = async (req: Request, res: Response) => {
         id: account.id,
         alias: account.alias,
         cbu: account.cbu,
-        // Puedes agregar aquí otros datos públicos si lo deseas
       },
     });
   } catch (error: any) {

@@ -2,34 +2,35 @@ import { Request, Response } from "express";
 import { models } from "../db/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { Op } from "sequelize"; // <--- Agrega esta línea
+import { Op } from "sequelize";
 
-dotenv.config(); // Cargar variables de entorno
+dotenv.config();
 
+/**
+ * Registra un nuevo usuario y crea una cuenta virtual inicial.
+ */
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password } = req.body;
-
-    // Obtén el modelo User dinámicamente
     const User = models.User;
 
-    // 1. Verificar si el usuario ya existe
+    // Verifica si el usuario ya existe
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       res.status(409).json({ message: "User with this email already exists." });
       return;
     }
 
-    // 2. Crear el nuevo usuario (el hook beforeCreate en el modelo hashea la contraseña)
+    // Crea el nuevo usuario (el hook beforeCreate hashea la contraseña)
     const newUser = await User.create({ name, email, password });
 
-    // Crear una cuenta inicial para el nuevo usuario con alias y cbu únicos
+    // Crea una cuenta inicial para el nuevo usuario con alias y cbu únicos
     const Account = models.Account;
     let alias: string, cbu: string;
     let isUnique = false;
     const [firstName, lastName] = name.trim().toLowerCase().split(" ");
     do {
-      const randomWord = Math.random().toString(36).substring(2, 6); // 4 letras/números aleatorios
+      const randomWord = Math.random().toString(36).substring(2, 6);
       alias = `${firstName}.${lastName}.${randomWord}.vw`;
       cbu = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
       const exists = await Account.findOne({
@@ -58,21 +59,22 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * Inicia sesión y devuelve un JWT si las credenciales son válidas.
+ */
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
-
-    // Obtén el modelo User dinámicamente
     const User = models.User;
 
-    // 1. Buscar al usuario por email
+    // Busca al usuario por email
     const user = await User.findOne({ where: { email } });
     if (!user) {
       res.status(401).json({ message: "Invalid credentials." });
       return;
     }
 
-    // 2. Comparar la contraseña (usando el método del modelo)
+    // Compara la contraseña
     if (!(user as any).password) {
       res.status(500).json({ message: "User password not set in database." });
       return;
@@ -83,22 +85,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 3. Generar el JWT
+    // Genera el JWT
     const payload: { id: number; email: string } = {
       id: Number(user.id),
       email: String(user.email),
     };
-
-    // Usa el secreto como string directamente
     const secret = process.env.JWT_SECRET as string;
-
     const expiresIn = process.env.JWT_EXPIRATION_TIME
       ? Number(process.env.JWT_EXPIRATION_TIME)
-      : 3600; // valor por defecto: 1 hora
+      : 3600;
 
-    const token = jwt.sign(payload, secret, {
-      expiresIn,
-    });
+    const token = jwt.sign(payload, secret, { expiresIn });
 
     res.status(200).json({
       message: "Logged in successfully!",
@@ -113,6 +110,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * Cierra la sesión del usuario (elimina el token en el cliente).
+ */
 export const logout = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json({
     message:

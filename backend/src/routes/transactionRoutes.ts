@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
 import {
   createTransaction,
   listUserTransactions,
@@ -6,10 +6,16 @@ import {
 
 const router = Router();
 
-// Ruta para crear una nueva transacción
+/**
+ * @route POST /transactions/transfer
+ * @desc Crea una nueva transacción (transferencia)
+ */
 router.post("/transfer", createTransaction);
 
-// Ruta para listar transacciones del usuario autenticado
+/**
+ * @route GET /transactions/list
+ * @desc Lista todas las transacciones del usuario autenticado
+ */
 router.get("/list", listUserTransactions);
 
 export default router;

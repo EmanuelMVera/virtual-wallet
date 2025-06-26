@@ -20,12 +20,16 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   declare email: string;
   declare password: string;
 
-  // Método para comparar contraseñas
+  /**
+   * Compara la contraseña ingresada con el hash almacenado.
+   */
   public async comparePassword(candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.getDataValue("password"));
   }
 
-  // Relación con otros modelos
+  /**
+   * Define las relaciones con otros modelos.
+   */
   static associate(models: any) {
     this.hasMany(models.Account, { foreignKey: "userId", as: "accounts" });
     this.hasMany(models.BankAccount, {
@@ -66,7 +70,7 @@ export default (sequelize: Sequelize) => {
       tableName: "users",
       timestamps: true,
 
-      // Hooks de Sequelize para hashear la contraseña antes de guardar
+      // Hooks de Sequelize para hashear la contraseña antes de guardar o actualizar
       hooks: {
         beforeCreate: async (user) => {
           // Email a minúsculas
@@ -83,7 +87,7 @@ export default (sequelize: Sequelize) => {
           }
         },
         beforeUpdate: async (user) => {
-          // Email a minúsculas
+          // Email a minúsculas si cambió
           const email = user.getDataValue("email");
           if (email && user.changed("email")) {
             user.setDataValue("email", email.toLowerCase());

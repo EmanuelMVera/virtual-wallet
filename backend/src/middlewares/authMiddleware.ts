@@ -1,18 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-// Importa el tipo del payload
 import { CustomJwtPayload } from "../../custom.d.js";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-  // Lanza un error si no está definido, lo que detendrá la aplicación al inicio
-  // si la variable de entorno falta.
+  // Detiene la aplicación si falta la variable de entorno
   throw new Error("JWT_SECRET must be defined in .env file");
 }
 
+/**
+ * Middleware para proteger rutas usando autenticación JWT.
+ * Verifica el token y adjunta el payload decodificado a req.user.
+ */
 export const protect = async (
   req: Request,
   res: Response,
@@ -20,23 +22,20 @@ export const protect = async (
 ): Promise<void> => {
   let token;
 
-  // 1. Verificar si el token está presente en los headers (Bearer Token)
+  // Verifica si el token está presente en los headers (Bearer Token)
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      token = req.headers.authorization.split(" ")[1]; // Obtener el token después de 'Bearer'
+      token = req.headers.authorization.split(" ")[1];
 
-      // Ahora JWT_SECRET es garantizado como string por la verificación anterior
-      const decoded = jwt.verify(token, JWT_SECRET) as CustomJwtPayload; // Casteamos a tu interfaz
+      // Verifica y decodifica el token JWT
+      const decoded = jwt.verify(token, JWT_SECRET) as CustomJwtPayload;
 
-      // 3. Adjuntar la información del usuario al objeto request (req.user)
-      // En una aplicación real, a menudo buscarías el usuario en la BD
-      // para asegurar que sigue existiendo y está activo.
-      // Por simplicidad, aquí solo adjuntamos el payload decodificado.
+      // Adjunta el payload decodificado al objeto request
       (req as any).user = decoded;
-      return next(); // Continuar con la siguiente función en la cadena de middleware/ruta
+      return next();
     } catch (error) {
       console.error("Token verification error:", error);
       res.status(401).json({ message: "Not authorized, token failed." });
@@ -44,6 +43,7 @@ export const protect = async (
     }
   }
 
+  // Si no hay token, responde con error de autorización
   if (!token) {
     res.status(401).json({ message: "Not authorized, no token." });
     return;

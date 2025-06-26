@@ -1,17 +1,22 @@
-import { Request } from "express";
 import { JwtPayload } from "jsonwebtoken";
 
-// Define una interfaz para el payload decodificado del JWT
+/**
+ * Interfaz personalizada para el payload decodificado del JWT.
+ * Puedes extender esta interfaz con las propiedades específicas que almacenas en tu token.
+ */
 export interface CustomJwtPayload extends JwtPayload {
-  id?: string; // O number, según como guardes el ID en el token
-  // Puedes agregar aquí otras propiedades específicas del JWT
+  id?: string; // ID del usuario (puede ser string o number según tu implementación)
+  // Agrega aquí otras propiedades personalizadas del JWT si las necesitas
 }
 
-// Extiende la interfaz Request de Express para incluir 'user'
+/**
+ * Extensión de la interfaz Request de Express para incluir la propiedad 'user'.
+ * Esto permite acceder a 'req.user' tipado correctamente en tus middlewares y controladores.
+ */
 declare global {
   namespace Express {
     interface Request {
-      user?: CustomJwtPayload; // 'user' es opcional
+      user?: CustomJwtPayload; // Propiedad opcional con la información del usuario autenticado
     }
   }
 }

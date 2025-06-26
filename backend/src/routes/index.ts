@@ -7,10 +7,14 @@ import { protect } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-// Rutas públicas, irían antes del middleware protect
+/**
+ * Rutas públicas (no requieren autenticación)
+ */
 router.use("/users", userRoutes);
 
-// Rutas protegidas (aplica protect solo aquí)
+/**
+ * Rutas protegidas (requieren autenticación con JWT)
+ */
 router.use("/accounts", protect, accountRoutes);
 router.use("/transactions", protect, transactionRoutes);
 router.use("/bank-accounts", protect, bankAccountRoutes);

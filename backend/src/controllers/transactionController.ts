@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { models } from "../db/db.js";
-import { Op } from "sequelize"; // <--- Agrega esta línea
+import { Op } from "sequelize";
 
-// Crear una transacción
+/**
+ * Crea una nueva transacción (transferencia) entre cuentas virtuales.
+ */
 export const createTransaction = async (
   req: Request,
   res: Response
@@ -59,7 +61,7 @@ export const createTransaction = async (
       return;
     }
 
-    // Realiza la transferencia (asegúrate de guardar como string)
+    // Realiza la transferencia
     senderAccount.balance = (
       Number(senderAccount.balance) - Number(amount)
     ).toFixed(2);
@@ -75,7 +77,7 @@ export const createTransaction = async (
         senderAccountId,
         receiverAccountId,
         amount,
-        type: "transfer", // <--- Nuevo campo
+        type: "transfer",
       },
       { transaction: t }
     );
@@ -103,6 +105,9 @@ export const createTransaction = async (
   }
 };
 
+/**
+ * Lista todas las transacciones donde el usuario autenticado es emisor o receptor.
+ */
 export const listUserTransactions = async (
   req: Request,
   res: Response

@@ -26,7 +26,9 @@ export class Transaction
   public timestamp!: Date;
   public type!: string;
 
-  //relacion con otros modelos
+  /**
+   * Define las relaciones con el modelo Account.
+   */
   static associate(models: any) {
     this.belongsTo(models.Account, {
       foreignKey: "senderAccountId",
@@ -51,7 +53,7 @@ export default (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true, // Permite null para depósitos desde banco
         references: {
-          model: "accounts", // Referencia a la tabla 'accounts'
+          model: "accounts",
           key: "id",
         },
       },
@@ -59,7 +61,7 @@ export default (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "accounts", // Referencia a la tabla 'accounts'
+          model: "accounts",
           key: "id",
         },
       },

@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { models } from "../db/db.js";
 
-// Registrar una cuenta bancaria ficticia
+/**
+ * Registra una cuenta bancaria ficticia para el usuario autenticado.
+ */
 export const registerBankAccount = async (req: Request, res: Response) => {
   try {
     const { bankName, accountNumber } = req.body;
@@ -26,7 +28,9 @@ export const registerBankAccount = async (req: Request, res: Response) => {
   }
 };
 
-// Simular depósito desde cuenta bancaria a la billetera virtual
+/**
+ * Simula un depósito desde una cuenta bancaria a la billetera virtual.
+ */
 export const depositToWallet = async (req: Request, res: Response) => {
   try {
     const { bankAccountId, walletAccountId, amount } = req.body;
@@ -55,26 +59,11 @@ export const depositToWallet = async (req: Request, res: Response) => {
       return;
     }
 
-    // LOG para depuración
-    console.log(
-      "BankAccount balance:",
-      bankAccount.get("balance"),
-      "Amount:",
-      amount
-    );
-
-    // Convierte los balances a número de forma segura (soporta string y number)
+    // Convierte los balances y el monto a número
     const bankBalance = parseFloat(bankAccount.get("balance") ?? "0");
     const walletBalance = parseFloat(walletAccount.get("balance") ?? "0");
     const depositAmount =
       typeof amount === "string" ? parseFloat(amount) : Number(amount);
-
-    console.log(
-      "Parsed bankBalance:",
-      bankBalance,
-      "Parsed depositAmount:",
-      depositAmount
-    );
 
     if (isNaN(bankBalance) || isNaN(walletBalance) || isNaN(depositAmount)) {
       res.status(400).json({ message: "Invalid balance or amount." });
@@ -98,7 +87,7 @@ export const depositToWallet = async (req: Request, res: Response) => {
       senderAccountId: null,
       receiverAccountId: walletAccount.id,
       amount: depositAmount,
-      type: "deposit", // <--- Nuevo campo
+      type: "deposit",
     });
 
     res.status(200).json({
@@ -116,7 +105,9 @@ export const depositToWallet = async (req: Request, res: Response) => {
   }
 };
 
-// Listar cuentas bancarias del usuario autenticado
+/**
+ * Lista todas las cuentas bancarias del usuario autenticado.
+ */
 export const listBankAccounts = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
