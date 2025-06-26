@@ -27,11 +27,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const Account = models.Account;
     let alias: string, cbu: string;
     let isUnique = false;
+    const [firstName, lastName] = name.trim().toLowerCase().split(" ");
     do {
-      alias = `alias${Math.random().toString(36).substring(2, 10)}`;
+      const randomWord = Math.random().toString(36).substring(2, 6); // 4 letras/números aleatorios
+      alias = `${firstName}.${lastName}.${randomWord}.vw`;
       cbu = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
       const exists = await Account.findOne({
-        where: { [Op.or]: [{ alias }, { cbu }] }, // <--- Usa Op importado
+        where: { [Op.or]: [{ alias }, { cbu }] },
       });
       isUnique = !exists;
     } while (!isUnique);

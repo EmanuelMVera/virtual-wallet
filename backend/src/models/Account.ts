@@ -1,5 +1,8 @@
 import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 
+/**
+ * Modelo para cuentas virtuales de la billetera.
+ */
 interface AccountAttributes {
   id: number;
   userId: number;
@@ -26,6 +29,7 @@ export class Account extends Model<
     });
   }
 }
+
 export default (sequelize: Sequelize) => {
   Account.init(
     {

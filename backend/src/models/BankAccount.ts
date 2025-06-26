@@ -1,11 +1,14 @@
 import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 
+/**
+ * Modelo para cuentas bancarias ficticias asociadas a un usuario.
+ */
 interface BankAccountAttributes {
   id: number;
   userId: number;
   bankName: string;
   accountNumber: string;
-  balance: string; // Debe ser string
+  balance: string;
 }
 
 interface BankAccountCreationAttributes
@@ -45,9 +48,9 @@ export default (sequelize: Sequelize) => {
         allowNull: false,
       },
       balance: {
-        type: DataTypes.STRING, // Cambiado a tipo string
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "1000.00", // saldo ficticio inicial como string
+        defaultValue: "1000.00",
       },
     },
     {

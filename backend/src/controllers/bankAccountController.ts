@@ -92,6 +92,15 @@ export const depositToWallet = async (req: Request, res: Response) => {
     await bankAccount.save();
     await walletAccount.save();
 
+    // Registra la transacción en la tabla transactions
+    const Transaction = models.Transaction;
+    await Transaction.create({
+      senderAccountId: null,
+      receiverAccountId: walletAccount.id,
+      amount: depositAmount,
+      type: "deposit", // <--- Nuevo campo
+    });
+
     res.status(200).json({
       message: "Deposit successful.",
       bankAccount: { id: bankAccount.id, balance: bankAccount.get("balance") },
@@ -104,5 +113,34 @@ export const depositToWallet = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ message: "Error during deposit.", error: error.message });
+  }
+};
+
+// Listar cuentas bancarias del usuario autenticado
+export const listBankAccounts = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: "User not authenticated." });
+      return;
+    }
+    const BankAccount = models.BankAccount;
+    const bankAccounts = await BankAccount.findAll({
+      where: { userId },
+      attributes: [
+        "id",
+        "bankName",
+        "accountNumber",
+        "balance",
+        "createdAt",
+        "updatedAt",
+      ],
+    });
+    res.status(200).json({ bankAccounts });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Error listing bank accounts.",
+      error: error.message,
+    });
   }
 };

@@ -1,25 +1,30 @@
 import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 
+/**
+ * Modelo para transacciones (transferencias y depósitos).
+ */
 interface TransactionAttributes {
   id: number;
-  senderAccountId: number;
+  senderAccountId: number | null;
   receiverAccountId: number;
-  amount: string; // Cambiado de number a string
+  amount: string;
   timestamp: Date;
+  type: string;
 }
 
 interface TransactionCreationAttributes
-  extends Optional<TransactionAttributes, "id" | "timestamp"> {}
+  extends Optional<TransactionAttributes, "id" | "timestamp" | "type"> {}
 
 export class Transaction
   extends Model<TransactionAttributes, TransactionCreationAttributes>
   implements TransactionAttributes
 {
   public id!: number;
-  public senderAccountId!: number;
+  public senderAccountId!: number | null;
   public receiverAccountId!: number;
-  public amount!: string; // Cambiado de number a string
+  public amount!: string;
   public timestamp!: Date;
+  public type!: string;
 
   //relacion con otros modelos
   static associate(models: any) {
@@ -44,7 +49,7 @@ export default (sequelize: Sequelize) => {
       },
       senderAccountId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true, // Permite null para depósitos desde banco
         references: {
           model: "accounts", // Referencia a la tabla 'accounts'
           key: "id",
@@ -69,6 +74,11 @@ export default (sequelize: Sequelize) => {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+      },
+      type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "transfer", // Por defecto es transferencia
       },
     },
     {

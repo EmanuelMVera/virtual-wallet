@@ -114,7 +114,15 @@ export const findAccount = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Account not found." });
       return;
     }
-    res.status(200).json({ account });
+    // Solo devuelve datos públicos
+    res.status(200).json({
+      account: {
+        id: account.id,
+        alias: account.alias,
+        cbu: account.cbu,
+        // Puedes agregar aquí otros datos públicos si lo deseas
+      },
+    });
   } catch (error: any) {
     res.status(500).json({
       message: "Server error while finding account.",

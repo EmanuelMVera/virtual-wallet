@@ -75,6 +75,7 @@ export const createTransaction = async (
         senderAccountId,
         receiverAccountId,
         amount,
+        type: "transfer", // <--- Nuevo campo
       },
       { transaction: t }
     );
@@ -123,6 +124,8 @@ export const listUserTransactions = async (
         [Op.or]: [
           { senderAccountId: accountIds },
           { receiverAccountId: accountIds },
+          // Incluye depósitos desde banco (senderAccountId null y receiverAccountId del usuario)
+          { senderAccountId: null, receiverAccountId: accountIds },
         ],
       },
       order: [["timestamp", "DESC"]],

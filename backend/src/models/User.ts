@@ -1,6 +1,9 @@
 import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 import bcrypt from "bcryptjs";
 
+/**
+ * Modelo de usuario de la billetera virtual.
+ */
 interface UserAttributes {
   id: number;
   name: string;
@@ -66,7 +69,12 @@ export default (sequelize: Sequelize) => {
       // Hooks de Sequelize para hashear la contraseña antes de guardar
       hooks: {
         beforeCreate: async (user) => {
-          console.log("Ejecutando hook beforeCreate para User");
+          // Email a minúsculas
+          const email = user.getDataValue("email");
+          if (email) {
+            user.setDataValue("email", email.toLowerCase());
+          }
+          // Hashea la contraseña
           const password = user.getDataValue("password");
           if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -75,6 +83,12 @@ export default (sequelize: Sequelize) => {
           }
         },
         beforeUpdate: async (user) => {
+          // Email a minúsculas
+          const email = user.getDataValue("email");
+          if (email && user.changed("email")) {
+            user.setDataValue("email", email.toLowerCase());
+          }
+          // Hashea la contraseña si cambió
           const password = user.getDataValue("password");
           if (password && user.changed("password")) {
             const salt = await bcrypt.genSalt(10);
