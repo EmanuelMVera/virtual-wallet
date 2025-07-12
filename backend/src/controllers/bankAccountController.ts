@@ -1,15 +1,23 @@
 import { Request, Response } from "express";
 import { models } from "../db/db.js";
+// Agrega import para validationResult
+import { validationResult } from "express-validator";
 
 /**
  * Registra una cuenta bancaria ficticia para el usuario autenticado.
  */
 export const registerBankAccount = async (req: Request, res: Response) => {
+  // Validación de datos de entrada
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
   try {
     const { bankName, accountNumber } = req.body;
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const BankAccount = models.BankAccount;
@@ -19,10 +27,15 @@ export const registerBankAccount = async (req: Request, res: Response) => {
       accountNumber,
       balance: 1000.0, // saldo ficticio inicial
     });
-    res.status(201).json({ message: "Bank account registered.", bankAccount });
+    res
+      .status(201)
+      .json({
+        message: "Cuenta bancaria registrada correctamente.",
+        bankAccount,
+      });
   } catch (error: any) {
     res.status(500).json({
-      message: "Error registering bank account.",
+      message: "Error registrando la cuenta bancaria.",
       error: error.message,
     });
   }
@@ -32,11 +45,17 @@ export const registerBankAccount = async (req: Request, res: Response) => {
  * Simula un depósito desde una cuenta bancaria a la billetera virtual.
  */
 export const depositToWallet = async (req: Request, res: Response) => {
+  // Validación de datos de entrada
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
   try {
     const { bankAccountId, walletAccountId, amount } = req.body;
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const BankAccount = models.BankAccount;
@@ -47,7 +66,7 @@ export const depositToWallet = async (req: Request, res: Response) => {
       where: { id: bankAccountId, userId },
     });
     if (!bankAccount) {
-      res.status(404).json({ message: "Bank account not found." });
+      res.status(404).json({ message: "Cuenta bancaria no encontrada." });
       return;
     }
     // Verifica que la cuenta virtual pertenezca al usuario
@@ -55,7 +74,7 @@ export const depositToWallet = async (req: Request, res: Response) => {
       where: { id: walletAccountId, userId },
     });
     if (!walletAccount) {
-      res.status(404).json({ message: "Wallet account not found." });
+      res.status(404).json({ message: "Cuenta virtual no encontrada." });
       return;
     }
 
@@ -66,12 +85,13 @@ export const depositToWallet = async (req: Request, res: Response) => {
       typeof amount === "string" ? parseFloat(amount) : Number(amount);
 
     if (isNaN(bankBalance) || isNaN(walletBalance) || isNaN(depositAmount)) {
-      res.status(400).json({ message: "Invalid balance or amount." });
+      res.status(400).json({ message: "Balance o monto inválido." });
       return;
     }
-
     if (bankBalance < depositAmount) {
-      res.status(400).json({ message: "Insufficient bank account balance." });
+      res
+        .status(400)
+        .json({ message: "Saldo insuficiente en la cuenta bancaria." });
       return;
     }
 
@@ -91,7 +111,7 @@ export const depositToWallet = async (req: Request, res: Response) => {
     });
 
     res.status(200).json({
-      message: "Deposit successful.",
+      message: "Depósito realizado correctamente.",
       bankAccount: { id: bankAccount.id, balance: bankAccount.get("balance") },
       walletAccount: {
         id: walletAccount.id,
@@ -101,7 +121,7 @@ export const depositToWallet = async (req: Request, res: Response) => {
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: "Error during deposit.", error: error.message });
+      .json({ message: "Error durante el depósito.", error: error.message });
   }
 };
 
@@ -112,7 +132,7 @@ export const listBankAccounts = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const BankAccount = models.BankAccount;
@@ -130,7 +150,7 @@ export const listBankAccounts = async (req: Request, res: Response) => {
     res.status(200).json({ bankAccounts });
   } catch (error: any) {
     res.status(500).json({
-      message: "Error listing bank accounts.",
+      message: "Error del servidor al listar las cuentas bancarias.",
       error: error.message,
     });
   }

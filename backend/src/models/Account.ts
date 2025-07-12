@@ -48,6 +48,8 @@ export default (sequelize: Sequelize) => {
           model: "users",
           key: "id",
         },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       balance: {
         type: DataTypes.DECIMAL(10, 2),

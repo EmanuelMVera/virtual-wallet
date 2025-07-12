@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
   // Detiene la aplicación si falta la variable de entorno
-  throw new Error("JWT_SECRET must be defined in .env file");
+  throw new Error("JWT_SECRET debe estar definida en el archivo .env");
 }
 
 /**
@@ -37,15 +37,15 @@ export const protect = async (
       (req as any).user = decoded;
       return next();
     } catch (error) {
-      console.error("Token verification error:", error);
-      res.status(401).json({ message: "Not authorized, token failed." });
+      console.error("Error al verificar el token:", error);
+      res.status(401).json({ message: "No autorizado, el token es inválido." });
       return;
     }
   }
 
   // Si no hay token, responde con error de autorización
   if (!token) {
-    res.status(401).json({ message: "Not authorized, no token." });
+    res.status(401).json({ message: "No autorizado, falta el token." });
     return;
   }
 };

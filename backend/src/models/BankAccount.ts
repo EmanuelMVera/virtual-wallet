@@ -41,6 +41,8 @@ export default (sequelize: Sequelize) => {
           model: "users",
           key: "id",
         },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       bankName: {
         type: DataTypes.STRING,

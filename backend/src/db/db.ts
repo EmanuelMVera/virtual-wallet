@@ -5,15 +5,18 @@ import dotenv from "dotenv";
 
 // Carga las variables de entorno desde .env
 dotenv.config();
+const isTest = process.env.NODE_ENV === "test";
 
 const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, NODE_ENV } = process.env;
 
 // Instancia principal de Sequelize para la conexión a la base de datos
 export const sequelize = new Sequelize(
-  `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`,
+  isTest
+    ? "sqlite::memory:"
+    : `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`,
   {
-    dialect: "postgres",
-    logging: NODE_ENV === "development" ? console.log : false,
+    dialect: isTest ? "sqlite" : "postgres",
+    logging: false,
   }
 );
 

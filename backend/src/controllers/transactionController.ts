@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { models } from "../db/db.js";
 import { Op } from "sequelize";
+import { validationResult } from "express-validator";
 
 /**
  * Crea una nueva transacción (transferencia) entre cuentas virtuales.
@@ -9,6 +10,13 @@ export const createTransaction = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  // Validación de datos de entrada
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+
   const sequelize = models.Account.sequelize;
   const t = await sequelize.transaction();
   try {
@@ -23,7 +31,7 @@ export const createTransaction = async (
     });
     if (!senderAccount) {
       await t.rollback();
-      res.status(403).json({ message: "Not authorized for this account." });
+      res.status(403).json({ message: "No autorizado para esta cuenta." });
       return;
     }
 
@@ -50,14 +58,14 @@ export const createTransaction = async (
     }
     if (!receiverAccount) {
       await t.rollback();
-      res.status(404).json({ message: "Receiver account not found." });
+      res.status(404).json({ message: "Cuenta de destino no encontrada." });
       return;
     }
 
     // Verifica saldo suficiente
     if (Number(senderAccount.balance) < Number(amount)) {
       await t.rollback();
-      res.status(400).json({ message: "Insufficient balance." });
+      res.status(400).json({ message: "Saldo insuficiente." });
       return;
     }
 
@@ -85,7 +93,7 @@ export const createTransaction = async (
     await t.commit();
 
     res.status(201).json({
-      message: "Transaction completed successfully.",
+      message: "Transacción realizada correctamente.",
       transaction,
       senderAccount: {
         id: senderAccount.id,
@@ -99,7 +107,7 @@ export const createTransaction = async (
   } catch (error: any) {
     if (t) await t.rollback();
     res.status(500).json({
-      message: "Server error while creating transaction.",
+      message: "Error del servidor al crear la transacción.",
       error: error.message,
     });
   }
@@ -115,7 +123,7 @@ export const listUserTransactions = async (
   try {
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
 
@@ -139,7 +147,7 @@ export const listUserTransactions = async (
     res.status(200).json({ transactions });
   } catch (error: any) {
     res.status(500).json({
-      message: "Server error while listing transactions.",
+      message: "Error del servidor al listar las transacciones.",
       error: error.message,
     });
   }

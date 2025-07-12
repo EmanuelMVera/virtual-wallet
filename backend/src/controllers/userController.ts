@@ -3,6 +3,7 @@ import { models } from "../db/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { Op } from "sequelize";
+import { validationResult } from "express-validator";
 
 dotenv.config();
 
@@ -10,6 +11,12 @@ dotenv.config();
  * Registra un nuevo usuario y crea una cuenta virtual inicial.
  */
 export const register = async (req: Request, res: Response): Promise<void> => {
+  // Validación de datos de entrada
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
   try {
     const { name, email, password } = req.body;
     const User = models.User;
@@ -17,7 +24,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Verifica si el usuario ya existe
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      res.status(409).json({ message: "User with this email already exists." });
+      res.status(409).json({ message: "Ya existe un usuario con este email." });
       return;
     }
 
@@ -47,13 +54,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     res.status(201).json({
-      message: "User registered successfully!",
+      message: "¡Usuario registrado exitosamente!",
       user: { id: newUser.id, email: newUser.email, name: newUser.name },
     });
   } catch (error: any) {
-    console.error("Error during registration:", error);
+    console.error("Error durante el registro:", error);
     res.status(500).json({
-      message: "Server error during registration.",
+      message: "Error del servidor durante el registro.",
       error: error.message,
     });
   }
@@ -63,6 +70,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  * Inicia sesión y devuelve un JWT si las credenciales son válidas.
  */
 export const login = async (req: Request, res: Response): Promise<void> => {
+  // Validación de datos de entrada
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
   try {
     const { email, password } = req.body;
     const User = models.User;
@@ -70,18 +83,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Busca al usuario por email
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      res.status(401).json({ message: "Invalid credentials." });
+      res.status(401).json({ message: "Credenciales inválidas." });
       return;
     }
 
     // Compara la contraseña
     if (!(user as any).password) {
-      res.status(500).json({ message: "User password not set in database." });
+      res.status(500).json({
+        message:
+          "La contraseña del usuario no está definida en la base de datos.",
+      });
       return;
     }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(401).json({ message: "Invalid credentials." });
+      res.status(401).json({ message: "Credenciales inválidas." });
       return;
     }
 
@@ -98,15 +114,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign(payload, secret, { expiresIn });
 
     res.status(200).json({
-      message: "Logged in successfully!",
+      message: "¡Inicio de sesión exitoso!",
       token,
       user: { id: user.id, email: user.email, name: user.name },
     });
   } catch (error: any) {
-    console.error("Error during login:", error);
-    res
-      .status(500)
-      .json({ message: "Server error during login.", error: error.message });
+    console.error("Error durante el inicio de sesión:", error);
+    res.status(500).json({
+      message: "Error del servidor durante el inicio de sesión.",
+      error: error.message,
+    });
   }
 };
 
@@ -116,6 +133,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const logout = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json({
     message:
-      "Logged out successfully. Please remove your token on client side.",
+      "Sesión cerrada correctamente. Por favor elimina tu token en el cliente.",
   });
 };

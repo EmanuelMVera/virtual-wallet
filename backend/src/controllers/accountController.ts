@@ -18,25 +18,25 @@ export const balance = async (req: Request, res: Response) => {
   try {
     const Account = models.Account;
     if (!req.user || !req.user.id) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const userId = req.user.id;
     const account = await Account.findOne({ where: { userId } });
 
     if (!account) {
-      res.status(404).json({ message: "Account not found." });
+      res.status(404).json({ message: "Cuenta no encontrada." });
       return;
     }
 
     res.status(200).json({
-      message: "Account balance retrieved successfully.",
+      message: "Balance de la cuenta obtenido correctamente.",
       balance: account.balance,
     });
   } catch (error: any) {
-    console.error("Error retrieving account balance:", error);
+    console.error("Error al obtener el balance de la cuenta:", error);
     res.status(500).json({
-      message: "Server error while retrieving account balance.",
+      message: "Error del servidor al obtener el balance de la cuenta.",
       error: error.message,
     });
   }
@@ -48,7 +48,7 @@ export const balance = async (req: Request, res: Response) => {
 export const createAccount = async (req: Request, res: Response) => {
   try {
     if (!req.user || !req.user.id) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const Account = models.Account;
@@ -72,12 +72,12 @@ export const createAccount = async (req: Request, res: Response) => {
       cbu,
     });
     res.status(201).json({
-      message: "Account created successfully.",
+      message: "Cuenta creada correctamente.",
       account: newAccount,
     });
   } catch (error: any) {
     res.status(500).json({
-      message: "Server error while creating account.",
+      message: "Error del servidor al crear la cuenta.",
       error: error.message,
     });
   }
@@ -89,7 +89,7 @@ export const createAccount = async (req: Request, res: Response) => {
 export const listAccounts = async (req: Request, res: Response) => {
   try {
     if (!req.user || !req.user.id) {
-      res.status(401).json({ message: "User not authenticated." });
+      res.status(401).json({ message: "Usuario no autenticado." });
       return;
     }
     const Account = models.Account;
@@ -97,7 +97,7 @@ export const listAccounts = async (req: Request, res: Response) => {
     res.status(200).json({ accounts });
   } catch (error: any) {
     res.status(500).json({
-      message: "Server error while listing accounts.",
+      message: "Error del servidor al listar las cuentas.",
       error: error.message,
     });
   }
@@ -116,11 +116,15 @@ export const findAccount = async (req: Request, res: Response) => {
     } else if (cbu) {
       account = await Account.findOne({ where: { cbu } });
     } else {
-      res.status(400).json({ message: "Provide alias or cbu as query param." });
+      res
+        .status(400)
+        .json({
+          message: "Proporcione alias o cbu como parámetro de consulta.",
+        });
       return;
     }
     if (!account) {
-      res.status(404).json({ message: "Account not found." });
+      res.status(404).json({ message: "Cuenta no encontrada." });
       return;
     }
     // Solo devuelve datos públicos
@@ -133,7 +137,7 @@ export const findAccount = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     res.status(500).json({
-      message: "Server error while finding account.",
+      message: "Error del servidor al buscar la cuenta.",
       error: error.message,
     });
   }
