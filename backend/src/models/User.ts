@@ -14,7 +14,6 @@ interface UserAttributes {
 interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> {
-  // Declaraciones solo para tipado, no sobrescriben getters/setters
   declare id: number;
   declare name: string;
   declare email: string;
@@ -69,16 +68,11 @@ export default (sequelize: Sequelize) => {
       modelName: "User",
       tableName: "users",
       timestamps: true,
-
-      // Hooks de Sequelize para hashear la contraseña antes de guardar o actualizar
       hooks: {
         beforeCreate: async (user) => {
-          // Email a minúsculas
           const email = user.getDataValue("email");
-          if (email) {
-            user.setDataValue("email", email.toLowerCase());
-          }
-          // Hashea la contraseña
+          if (email) user.setDataValue("email", email.toLowerCase());
+
           const password = user.getDataValue("password");
           if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -87,17 +81,18 @@ export default (sequelize: Sequelize) => {
           }
         },
         beforeUpdate: async (user) => {
-          // Email a minúsculas si cambió
           const email = user.getDataValue("email");
           if (email && user.changed("email")) {
             user.setDataValue("email", email.toLowerCase());
           }
-          // Hashea la contraseña si cambió
-          const password = user.getDataValue("password");
-          if (password && user.changed("password")) {
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(password, salt);
-            user.setDataValue("password", hash);
+
+          if (user.changed("password")) {
+            const password = user.getDataValue("password");
+            if (password) {
+              const salt = await bcrypt.genSalt(10);
+              const hash = await bcrypt.hash(password, salt);
+              user.setDataValue("password", hash);
+            }
           }
         },
       },

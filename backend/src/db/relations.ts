@@ -11,5 +11,5 @@ export const defineRelations = (models: Record<string, any>) => {
     }
   });
 
-  console.log("✔ Relaciones entre modelos definidas.");
+  // console.log("✔ Relaciones entre modelos definidas.");
 };

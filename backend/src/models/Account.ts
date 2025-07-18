@@ -6,7 +6,7 @@ import { Model, DataTypes, Sequelize, Optional } from "sequelize";
 interface AccountAttributes {
   id: number;
   userId: number;
-  balance: string;
+  balance: number;
   alias?: string;
   cbu?: string;
 }
@@ -17,6 +17,12 @@ export class Account extends Model<
   AccountAttributes,
   AccountCreationAttributes
 > {
+  declare id: number;
+  declare userId: number;
+  declare balance: number;
+  declare alias?: string;
+  declare cbu?: string;
+
   /**
    * Define las relaciones con otros modelos.
    */

@@ -3,24 +3,27 @@ import loadModels from "../models/_loader.js";
 import { defineRelations } from "./relations.js";
 import dotenv from "dotenv";
 
-// Carga las variables de entorno desde .env
 dotenv.config();
 const isTest = process.env.NODE_ENV === "test";
 
-const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, NODE_ENV } = process.env;
+const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
 
-// Instancia principal de Sequelize para la conexión a la base de datos
-export const sequelize = new Sequelize(
-  isTest
-    ? "sqlite::memory:"
-    : `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`,
-  {
-    dialect: isTest ? "sqlite" : "postgres",
-    logging: false,
-  }
-);
+// Instancia de Sequelize según entorno
+export const sequelize = isTest
+  ? new Sequelize({
+      dialect: "sqlite",
+      storage: ":memory:", // Forma soportada (sin advertencia)
+      logging: false,
+    })
+  : new Sequelize(
+      `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`,
+      {
+        dialect: "postgres",
+        logging: false,
+      }
+    );
 
-// Objeto global para almacenar los modelos cargados
+// Objeto global para almacenar modelos
 export const models: Record<string, any> = {};
 
 /**
@@ -32,24 +35,19 @@ export const models: Record<string, any> = {};
  */
 const initDatabase = async () => {
   try {
-    // Carga todos los modelos dinámicamente
     const loadedModels = await loadModels(sequelize);
     Object.assign(models, loadedModels);
 
-    // Define las relaciones entre los modelos
     defineRelations(models);
 
-    // Verifica la conexión a la base de datos
     await sequelize.authenticate();
+    await sequelize.sync({ alter: true }); // en tests podrías usar force:true si querés limpio
 
-    // Sincroniza los modelos con la base de datos
-    await sequelize.sync({ alter: true });
-    // alter: true ajusta las tablas existentes para que coincidan con los modelos definidos, sin perder datos.
-    // Si deseas forzar la sincronización y eliminar datos existentes, usa { force: true } en lugar de { alter: true }
-    // alter: false no sincroniza los modelos con la base de datos.
-
-    console.log("✅ Modelos sincronizados con la base de datos.");
-    console.log("✅ Conexión a la base de datos establecida.");
+    // Solo loguea si NO es test para no ensuciar la salida
+    if (!isTest) {
+      console.log("✅ Modelos sincronizados con la base de datos.");
+      console.log("✅ Conexión a la base de datos establecida.");
+    }
   } catch (err) {
     console.error("❌ Error inicializando base de datos:", err);
   }

@@ -1,6 +1,6 @@
-import { body } from "express-validator";
+import { body, ValidationChain } from "express-validator";
 
-export const registerValidation = [
+export const registerValidation: ValidationChain[] = [
   body("name")
     .isString()
     .isLength({ min: 2 })

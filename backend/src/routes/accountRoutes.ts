@@ -1,30 +1,13 @@
 import { Router } from "express";
-import {
-  balance,
-  listAccounts,
-  createAccount,
-  findAccount,
-} from "../controllers/accountController.js";
+import { accountData, findAccount } from "../controllers/accountController.js";
 
 const router = Router();
 
 /**
- * @route GET /accounts/balance
- * @desc Obtiene el balance de la cuenta del usuario autenticado
+ * @route GET /accounts/account
+ * @desc Obtiene los datos de la cuenta del usuario autenticado
  */
-router.get("/balance", balance);
-
-/**
- * @route GET /accounts/list
- * @desc Lista todas las cuentas del usuario autenticado
- */
-router.get("/list", listAccounts);
-
-/**
- * @route POST /accounts/create
- * @desc Crea una nueva cuenta para el usuario
- */
-router.post("/create", createAccount);
+router.get("/account", accountData);
 
 /**
  * @route GET /accounts/find

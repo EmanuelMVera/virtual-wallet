@@ -1,14 +1,25 @@
 import request from "supertest";
 import app from "../../src/app.js";
+import initDatabase, { sequelize, models } from "../../src/db/db.js";
 
-describe("E2E - Transferencia a sí mismo (debe fallar)", () => {
+beforeAll(async () => {
+  process.env.NODE_ENV = "test";
+  await initDatabase();
+  await sequelize.sync({ force: true });
+});
+
+afterAll(async () => {
+  await sequelize.close();
+});
+
+describe("Transferencia a sí mismo - Rechazo de operaciones inválidas", () => {
   let token: string;
   let accountId: number;
 
   const email = `self${Date.now()}@mail.com`;
   const password = "password123";
 
-  it("Registra y loguea usuario", async () => {
+  it("registra y loguea un usuario para probar transferencias inválidas", async () => {
     await request(app)
       .post("/api/users/register")
       .send({ name: "Self User", email, password });
@@ -18,19 +29,17 @@ describe("E2E - Transferencia a sí mismo (debe fallar)", () => {
     token = res.body.token;
   });
 
-  it("Crea cuenta virtual y simula saldo", async () => {
+  it("obtiene la cuenta virtual creada y asigna saldo inicial", async () => {
     const resAcc = await request(app)
-      .post("/api/accounts")
+      .get("/api/accounts/account")
       .set("Authorization", `Bearer ${token}`);
     accountId = resAcc.body.account.id;
-    await app
-      .get("models")
-      .Account.update({ balance: 100 }, { where: { id: accountId } });
+    await models.Account.update({ balance: 100 }, { where: { id: accountId } });
   });
 
-  it("Intenta transferir a sí mismo y debe fallar", async () => {
+  it("intenta transferirse a sí mismo y debe ser rechazado", async () => {
     const res = await request(app)
-      .post("/api/transactions")
+      .post("/api/transactions/transfer")
       .set("Authorization", `Bearer ${token}`)
       .send({
         senderAccountId: accountId,
@@ -38,6 +47,6 @@ describe("E2E - Transferencia a sí mismo (debe fallar)", () => {
         amount: 10,
       });
     expect(res.status).toBe(400);
-    expect(res.body.message).toMatch(/cannot transfer to the same account/i);
+    expect(res.body.message).toMatch(/misma cuenta/i);
   });
 });

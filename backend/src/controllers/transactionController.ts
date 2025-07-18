@@ -1,29 +1,31 @@
-import { Request, Response } from "express";
+import { RequestHandler } from "express";
 import { models } from "../db/db.js";
-import { Op } from "sequelize";
 import { validationResult } from "express-validator";
+import { sendError } from "../utils/responseUtils.js";
+import { formatBalance } from "../utils/formatUtils.js";
+import { Op } from "sequelize";
 
-/**
- * Crea una nueva transacción (transferencia) entre cuentas virtuales.
- */
-export const createTransaction = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  // Validación de datos de entrada
+export const createTransaction: RequestHandler = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
 
-  const sequelize = models.Account.sequelize;
+  const sequelize = models.Account.sequelize!;
   const t = await sequelize.transaction();
-  try {
-    const { senderAccountId, receiverAccountId, amount } = req.body;
-    const userId = req.user?.id;
 
-    // Verifica que el usuario sea dueño de la cuenta de origen
+  try {
+    const {
+      senderAccountId,
+      receiverAccountId,
+      receiverAlias,
+      receiverCbu,
+      amount,
+    } = req.body;
+    const userId = req.user!.id;
+
+    // Validar cuenta emisora pertenece al usuario
     const senderAccount = await models.Account.findOne({
       where: { id: senderAccountId, userId },
       transaction: t,
@@ -31,59 +33,71 @@ export const createTransaction = async (
     });
     if (!senderAccount) {
       await t.rollback();
-      res.status(403).json({ message: "No autorizado para esta cuenta." });
+      sendError(res, 403, "No autorizado para esta cuenta.");
       return;
     }
 
-    // Busca la cuenta destino por id, alias o cbu
-    let receiverAccount;
+    // Obtener cuenta receptora por ID, alias o CBU
+    let receiverAccount = null;
     if (receiverAccountId) {
       receiverAccount = await models.Account.findOne({
         where: { id: receiverAccountId },
         transaction: t,
         lock: t.LOCK.UPDATE,
       });
-    } else if (req.body.receiverAlias) {
+    } else if (receiverAlias) {
       receiverAccount = await models.Account.findOne({
-        where: { alias: req.body.receiverAlias },
+        where: { alias: receiverAlias },
         transaction: t,
         lock: t.LOCK.UPDATE,
       });
-    } else if (req.body.receiverCbu) {
+    } else if (receiverCbu) {
       receiverAccount = await models.Account.findOne({
-        where: { cbu: req.body.receiverCbu },
+        where: { cbu: receiverCbu },
         transaction: t,
         lock: t.LOCK.UPDATE,
       });
     }
+
+    // Validar existencia de la cuenta receptora
     if (!receiverAccount) {
       await t.rollback();
-      res.status(404).json({ message: "Cuenta de destino no encontrada." });
+      sendError(res, 404, "Cuenta de destino no encontrada.");
       return;
     }
 
-    // Verifica saldo suficiente
+    // Nueva validación: evitar transferencias a la misma cuenta
+    if (senderAccountId === receiverAccountId) {
+      await t.rollback();
+      res
+        .status(400)
+        .json({ message: "No se puede transferir a la misma cuenta." });
+      return;
+    }
+
+    // Validar saldo suficiente
     if (Number(senderAccount.balance) < Number(amount)) {
       await t.rollback();
-      res.status(400).json({ message: "Saldo insuficiente." });
+      sendError(res, 400, "Saldo insuficiente.");
       return;
     }
 
-    // Realiza la transferencia
-    senderAccount.balance = (
+    // Actualizar balances
+    senderAccount.balance = formatBalance(
       Number(senderAccount.balance) - Number(amount)
-    ).toFixed(2);
-    receiverAccount.balance = (
+    );
+    receiverAccount.balance = formatBalance(
       Number(receiverAccount.balance) + Number(amount)
-    ).toFixed(2);
+    );
+
     await senderAccount.save({ transaction: t });
     await receiverAccount.save({ transaction: t });
 
-    // Crea la transacción
+    // Registrar transacción
     const transaction = await models.Transaction.create(
       {
         senderAccountId,
-        receiverAccountId,
+        receiverAccountId: receiverAccount.id,
         amount,
         type: "transfer",
       },
@@ -95,17 +109,14 @@ export const createTransaction = async (
     res.status(201).json({
       message: "Transacción realizada correctamente.",
       transaction,
-      senderAccount: {
-        id: senderAccount.id,
-        balance: senderAccount.balance,
-      },
+      senderAccount: { id: senderAccount.id, balance: senderAccount.balance },
       receiverAccount: {
         id: receiverAccount.id,
         balance: receiverAccount.balance,
       },
     });
   } catch (error: any) {
-    if (t) await t.rollback();
+    await t.rollback();
     res.status(500).json({
       message: "Error del servidor al crear la transacción.",
       error: error.message,
@@ -113,31 +124,18 @@ export const createTransaction = async (
   }
 };
 
-/**
- * Lista todas las transacciones donde el usuario autenticado es emisor o receptor.
- */
-export const listUserTransactions = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const listUserTransactions: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: "Usuario no autenticado." });
-      return;
-    }
+    const userId = req.user!.id;
 
-    // Busca todas las cuentas del usuario
     const accounts = await models.Account.findAll({ where: { userId } });
-    const accountIds = accounts.map((acc: any) => acc.id);
+    const accountIds = accounts.map((acc: { id: number }) => acc.id);
 
-    // Busca transacciones donde el usuario sea emisor o receptor
     const transactions = await models.Transaction.findAll({
       where: {
         [Op.or]: [
           { senderAccountId: accountIds },
           { receiverAccountId: accountIds },
-          // Incluye depósitos desde banco (senderAccountId null y receiverAccountId del usuario)
           { senderAccountId: null, receiverAccountId: accountIds },
         ],
       },

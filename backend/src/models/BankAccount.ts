@@ -14,10 +14,16 @@ interface BankAccountAttributes {
 interface BankAccountCreationAttributes
   extends Optional<BankAccountAttributes, "id"> {}
 
-export class BankAccount extends Model<
-  BankAccountAttributes,
-  BankAccountCreationAttributes
-> {
+export class BankAccount
+  extends Model<BankAccountAttributes, BankAccountCreationAttributes>
+  implements BankAccountAttributes
+{
+  declare id: number;
+  declare userId: number;
+  declare bankName: string;
+  declare accountNumber: string;
+  declare balance: string;
+
   /**
    * Define la relación con el modelo User.
    */

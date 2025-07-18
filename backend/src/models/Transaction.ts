@@ -19,16 +19,13 @@ export class Transaction
   extends Model<TransactionAttributes, TransactionCreationAttributes>
   implements TransactionAttributes
 {
-  public id!: number;
-  public senderAccountId!: number | null;
-  public receiverAccountId!: number;
-  public amount!: string;
-  public timestamp!: Date;
-  public type!: string;
+  declare id: number;
+  declare senderAccountId: number | null;
+  declare receiverAccountId: number;
+  declare amount: string;
+  declare timestamp: Date;
+  declare type: string;
 
-  /**
-   * Define las relaciones con el modelo Account.
-   */
   static associate(models: any) {
     this.belongsTo(models.Account, {
       foreignKey: "senderAccountId",

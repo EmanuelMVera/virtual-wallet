@@ -1,10 +1,18 @@
 import request from "supertest";
 import app from "../../src/app.js";
+import initDatabase, { sequelize } from "../../src/db/db.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 let token: string;
+let resAlias: string;
+let resCbu: string;
 
 beforeAll(async () => {
-  // Registra y loguea un usuario para obtener token
+  await initDatabase();
+  await sequelize.sync({ force: true });
+
   const email = `test${Date.now()}@mail.com`;
   await request(app)
     .post("/api/users/register")
@@ -13,32 +21,71 @@ beforeAll(async () => {
     .post("/api/users/login")
     .send({ email, password: "password123" });
   token = res.body.token;
+  expect(token).toBeDefined();
+
+  const resAcc = await request(app)
+    .get("/api/accounts/account")
+    .set("Authorization", `Bearer ${token}`);
+  resAlias = resAcc.body.account.alias;
+  resCbu = resAcc.body.account.cbu;
 });
 
-describe("Account Controller", () => {
-  it("debe crear una nueva cuenta virtual", async () => {
+afterAll(async () => {
+  await sequelize.close();
+});
+
+describe("Datos de la cuenta", () => {
+  it("debe obtener los datos de la cuenta", async () => {
     const res = await request(app)
-      .post("/api/accounts")
-      .set("Authorization", `Bearer ${token}`)
-      .send();
-    expect(res.status).toBe(201);
+      .get("/api/accounts/account")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
     expect(res.body.account).toBeDefined();
     expect(res.body.account.alias).toBeDefined();
     expect(res.body.account.cbu).toBeDefined();
   });
 
-  it("debe listar las cuentas virtuales del usuario", async () => {
+  it("debe rechazar acceso sin token", async () => {
+    const res = await request(app).get("/api/accounts/account");
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe("Usuario no autenticado.");
+  });
+});
+
+describe("Busqueda de cuenta", () => {
+  it("debe encontrar la cuenta por alias", async () => {
     const res = await request(app)
-      .get("/api/accounts")
-      .set("Authorization", `Bearer ${token}`);
+      .get("/api/accounts/find")
+      .set("Authorization", `Bearer ${token}`)
+      .query({ alias: resAlias });
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.accounts)).toBe(true);
+    expect(res.body.account).toBeDefined();
+    expect(res.body.account.alias).toBe(resAlias);
   });
 
-  it("debe obtener el balance de la cuenta", async () => {
+  it("debe encontrar la cuenta por cbu", async () => {
     const res = await request(app)
-      .get("/api/accounts/balance")
+      .get("/api/accounts/find")
+      .set("Authorization", `Bearer ${token}`)
+      .query({ cbu: resCbu });
+    expect(res.status).toBe(200);
+    expect(res.body.account).toBeDefined();
+    expect(res.body.account.cbu).toBe(resCbu);
+  });
+
+  it("debe devolver 404 si no existe la cuenta por alias", async () => {
+    const res = await request(app)
+      .get(`/api/accounts/find?alias=aliasinexistente`)
       .set("Authorization", `Bearer ${token}`);
-    expect([200, 404]).toContain(res.status); // Puede ser 404 si no hay cuenta
+    expect(res.status).toBe(404);
+    expect(res.body.message).toBe("Cuenta no encontrada.");
+  });
+
+  it("debe devolver 404 si no existe la cuenta por cbu", async () => {
+    const res = await request(app)
+      .get(`/api/accounts/find?cbu=cbusinexistente`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(404);
+    expect(res.body.message).toBe("Cuenta no encontrada.");
   });
 });

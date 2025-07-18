@@ -1,38 +1,31 @@
-import { Request, Response } from "express";
+import { RequestHandler } from "express";
 import { models } from "../db/db.js";
-// Agrega import para validationResult
 import { validationResult } from "express-validator";
+import { sendError } from "../utils/responseUtils.js";
+import { formatBalance } from "../utils/formatUtils.js";
 
-/**
- * Registra una cuenta bancaria ficticia para el usuario autenticado.
- */
-export const registerBankAccount = async (req: Request, res: Response) => {
-  // Validación de datos de entrada
+export const registerBankAccount: RequestHandler = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
+
   try {
     const { bankName, accountNumber } = req.body;
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: "Usuario no autenticado." });
-      return;
-    }
-    const BankAccount = models.BankAccount;
-    const bankAccount = await BankAccount.create({
+    const userId = req.user!.id;
+
+    const bankAccount = await models.BankAccount.create({
       userId,
       bankName,
       accountNumber,
-      balance: 1000.0, // saldo ficticio inicial
+      balance: 1000.0,
     });
-    res
-      .status(201)
-      .json({
-        message: "Cuenta bancaria registrada correctamente.",
-        bankAccount,
-      });
+
+    res.status(201).json({
+      message: "Cuenta bancaria registrada correctamente.",
+      bankAccount,
+    });
   } catch (error: any) {
     res.status(500).json({
       message: "Error registrando la cuenta bancaria.",
@@ -41,69 +34,58 @@ export const registerBankAccount = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Simula un depósito desde una cuenta bancaria a la billetera virtual.
- */
-export const depositToWallet = async (req: Request, res: Response) => {
-  // Validación de datos de entrada
+export const depositToWallet: RequestHandler = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
     return;
   }
+
   try {
     const { bankAccountId, walletAccountId, amount } = req.body;
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: "Usuario no autenticado." });
-      return;
-    }
-    const BankAccount = models.BankAccount;
-    const Account = models.Account;
+    const userId = req.user!.id;
 
-    // Verifica que la cuenta bancaria pertenezca al usuario
-    const bankAccount = await BankAccount.findOne({
+    const bankAccount = await models.BankAccount.findOne({
       where: { id: bankAccountId, userId },
     });
     if (!bankAccount) {
-      res.status(404).json({ message: "Cuenta bancaria no encontrada." });
+      sendError(res, 404, "Cuenta bancaria no encontrada.");
       return;
     }
-    // Verifica que la cuenta virtual pertenezca al usuario
-    const walletAccount = await Account.findOne({
+
+    const walletAccount = await models.Account.findOne({
       where: { id: walletAccountId, userId },
     });
     if (!walletAccount) {
-      res.status(404).json({ message: "Cuenta virtual no encontrada." });
+      sendError(res, 404, "Cuenta virtual no encontrada.");
       return;
     }
 
-    // Convierte los balances y el monto a número
-    const bankBalance = parseFloat(bankAccount.get("balance") ?? "0");
-    const walletBalance = parseFloat(walletAccount.get("balance") ?? "0");
+    const bankBalance = parseFloat(
+      bankAccount.get("balance")?.toString() ?? "0"
+    );
+    const walletBalance = parseFloat(
+      walletAccount.get("balance")?.toString() ?? "0"
+    );
     const depositAmount =
       typeof amount === "string" ? parseFloat(amount) : Number(amount);
 
-    if (isNaN(bankBalance) || isNaN(walletBalance) || isNaN(depositAmount)) {
-      res.status(400).json({ message: "Balance o monto inválido." });
+    if (isNaN(depositAmount) || depositAmount <= 0) {
+      sendError(res, 400, "Monto de depósito inválido.");
       return;
     }
     if (bankBalance < depositAmount) {
-      res
-        .status(400)
-        .json({ message: "Saldo insuficiente en la cuenta bancaria." });
+      sendError(res, 400, "Saldo insuficiente en la cuenta bancaria.");
       return;
     }
 
-    // Realiza el depósito
-    bankAccount.set("balance", (bankBalance - depositAmount).toFixed(2));
-    walletAccount.set("balance", (walletBalance + depositAmount).toFixed(2));
+    bankAccount.set("balance", formatBalance(bankBalance - depositAmount));
+    walletAccount.set("balance", formatBalance(walletBalance + depositAmount));
+
     await bankAccount.save();
     await walletAccount.save();
 
-    // Registra la transacción en la tabla transactions
-    const Transaction = models.Transaction;
-    await Transaction.create({
+    await models.Transaction.create({
       senderAccountId: null,
       receiverAccountId: walletAccount.id,
       amount: depositAmount,
@@ -119,24 +101,18 @@ export const depositToWallet = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error durante el depósito.", error: error.message });
+    res.status(500).json({
+      message: "Error durante el depósito.",
+      error: error.message,
+    });
   }
 };
 
-/**
- * Lista todas las cuentas bancarias del usuario autenticado.
- */
-export const listBankAccounts = async (req: Request, res: Response) => {
+export const listBankAccounts: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: "Usuario no autenticado." });
-      return;
-    }
-    const BankAccount = models.BankAccount;
-    const bankAccounts = await BankAccount.findAll({
+    const userId = req.user!.id;
+
+    const bankAccounts = await models.BankAccount.findAll({
       where: { userId },
       attributes: [
         "id",
@@ -147,6 +123,7 @@ export const listBankAccounts = async (req: Request, res: Response) => {
         "updatedAt",
       ],
     });
+
     res.status(200).json({ bankAccounts });
   } catch (error: any) {
     res.status(500).json({

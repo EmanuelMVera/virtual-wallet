@@ -1,31 +1,29 @@
-function generateAlias(firstName: string, lastName: string): string {
-  const randomWord = Math.random().toString(36).substring(2, 6);
-  return `${firstName}.${lastName}.${randomWord}.vw`;
-}
+import { generateAlias, generateCbu } from "../../src/utils/accountUtils.js";
 
-function generateCbu(): string {
-  return `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-}
+describe("Utils - Account", () => {
+  describe("generateAlias", () => {
+    it("debe generar alias con el formato correcto", () => {
+      const alias = generateAlias("juan", "perez");
+      expect(alias).toMatch(/^juan\.perez\.[a-z0-9]{4}\.vw$/);
+    });
 
-describe("Account Utils", () => {
-  it("debe generar alias únicos", () => {
-    const alias1 = generateAlias("juan", "perez");
-    const alias2 = generateAlias("juan", "perez");
-    expect(alias1).not.toBe(alias2);
-    expect(alias1).toMatch(/juan\.perez\.[a-z0-9]{4}\.vw/);
+    it("debe generar alias únicos en múltiples llamadas", () => {
+      const alias1 = generateAlias("ana", "gomez");
+      const alias2 = generateAlias("ana", "gomez");
+      expect(alias1).not.toBe(alias2);
+    });
   });
 
-  it("debe generar CBU únicos", () => {
-    const cbu1 = generateCbu();
-    const cbu2 = generateCbu();
-    expect(cbu1).not.toBe(cbu2);
-    expect(cbu1).toMatch(/^\d{13,}$/);
-  });
-});
+  describe("generateCbu", () => {
+    it("debe generar CBUs únicos en múltiples llamadas", () => {
+      const cbu1 = generateCbu();
+      const cbu2 = generateCbu();
+      expect(cbu1).not.toBe(cbu2);
+    });
 
-describe("Correcta generación de sufijo vw", () => {
-  it("debe generar vw al final", () => {
-    const alias1 = "Pedro.Pascal.1234.vw";
-    expect(alias1).toMatch(/\.vw$/);
+    it("debe devolver un string numérico largo", () => {
+      const cbu = generateCbu();
+      expect(cbu).toMatch(/^\d{13,}$/);
+    });
   });
 });

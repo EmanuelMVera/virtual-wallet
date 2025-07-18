@@ -14,4 +14,6 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
+  // Ignorar tests compilados en dist para que no se ejecuten dos veces
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };

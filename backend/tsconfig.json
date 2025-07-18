@@ -16,7 +16,6 @@
     "types": ["node", "jest"],
     "isolatedModules": true
   },
-  // "include": ["src/**/*.ts", "tests/**/*.ts"],
-  "include": ["src", "tests"],
+  "include": ["src", "tests", "custom.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
