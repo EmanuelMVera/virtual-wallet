@@ -1,0 +1,93 @@
+# ========================
+# Dependencias de Node
+# ========================
+backend/node_modules/
+frontend/node_modules/
+
+# ========================
+# Directorios de build / distribución
+# ========================
+backend/dist/
+frontend/dist/
+frontend/dist-ssr/
+backend/build/
+backend/lib/
+backend/es/
+backend/out/
+backend/ts_build/
+
+# ========================
+# Archivos de entorno (no subir nunca)
+# ========================
+backend/.env
+backend/.env.local
+backend/.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# ========================
+# Logs y cachés
+# ========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+.npm/
+
+# ========================
+# Archivos temporales y bases de datos locales
+# ========================
+tmp/
+temp/
+*.sqlite
+*.sqlite3
+*.db
+*.mdb
+data/*.db
+data/*.sqlite
+*.sql
+*.backup
+pg_log/
+mysql_log/
+
+# ========================
+# Archivos de cobertura de tests
+# ========================
+coverage/
+
+# ========================
+# Configuración de IDEs y editores
+# ========================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
+*.iws
+*.ipr
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+
+# ========================
+# Archivos del sistema (MacOS / Windows)
+# ========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ========================
+# Certificados y llaves
+# ========================
+*.pem
+*.key
+*.crt
