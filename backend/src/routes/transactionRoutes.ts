@@ -1,22 +1,14 @@
 import { Router } from "express";
 import {
   createTransaction,
-  listUserTransactions,
+  getUserBankAccounts,
 } from "../controllers/transactionController.js";
 import { transactionValidation } from "../middlewares/validationMiddleware.js";
+import { validate } from "../utils/validationUtils.js";
 
 const router = Router();
 
-/**
- * @route POST /transactions/transfer
- * @desc Crea una nueva transacción (transferencia)
- */
-router.post("/transfer", transactionValidation, createTransaction);
-
-/**
- * @route GET /transactions/list
- * @desc Lista todas las transacciones del usuario autenticado
- */
-router.get("/list", listUserTransactions);
+router.post("/transfer", transactionValidation, validate, createTransaction);
+router.get("/list", getUserBankAccounts);
 
 export default router;

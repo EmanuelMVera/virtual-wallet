@@ -1,7 +1,7 @@
 import { Router } from "express";
 import userRoutes from "./userRoutes.js";
-import transactionRoutes from "./transactionRoutes.js";
 import accountRoutes from "./accountRoutes.js";
+import transactionRoutes from "./transactionRoutes.js";
 import bankAccountRoutes from "./bankAccountRoutes.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
