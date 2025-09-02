@@ -2,6 +2,7 @@ import { models } from "../db/db.js";
 import { generateAlias, generateCbu } from "../utils/accountUtils.js";
 import { generateToken } from "../utils/authUtils.js";
 import { Op } from "sequelize";
+import User from "../models/User"; // Ajusta el import según tu estructura/modelo
 
 export const registerUser = async ({ name, email, password }: any) => {
   const User = models.User;
@@ -69,4 +70,12 @@ export const loginUser = async ({ email, password }: any) => {
     token,
     user: { id: user.id, email: user.email, name: user.name },
   };
+};
+
+export const getMe = async (userId: number) => {
+  const User = models.User;
+  // Busca el usuario por su ID y excluye campos sensibles como password
+  return await User.findByPk(userId, {
+    attributes: { exclude: ["password"] },
+  });
 };

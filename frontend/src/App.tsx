@@ -1,10 +1,10 @@
-import React from "react";
+import "./App.css";
 
 function App() {
   return (
-    <div>
-      <h1>Proyecto limpio con React + TypeScript</h1>
-    </div>
+    <>
+      <p>proyecto base</p>
+    </>
   );
 }
 
