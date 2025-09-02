@@ -1,11 +1,4 @@
-import "./App.css";
-
-function App() {
-  return (
-    <>
-      <p>proyecto base</p>
-    </>
-  );
+import AppRouter from "./router";
+export default function App() {
+  return <AppRouter />;
 }
-
-export default App;
