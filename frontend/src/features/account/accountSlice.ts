@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
-import type { Account } from "../../types";
+import type { Account, ApiErrorBody } from "../../types";
+import type { AxiosError } from "axios";
 
 interface AccountState {
   me: Account | null;
@@ -8,6 +9,7 @@ interface AccountState {
   loading: boolean;
   error: string | null;
 }
+
 const initialState: AccountState = {
   me: null,
   lookup: null,
@@ -15,26 +17,47 @@ const initialState: AccountState = {
   error: null,
 };
 
-export const getMyAccount = createAsyncThunk("account/me", async () => {
-  const { data } = await api.get("/accounts/me");
-  return data as { account: Account };
+// GET /accounts/account  -> { account }
+export const getMyAccount = createAsyncThunk<
+  { account: Account }, // Return (fulfilled)
+  void, // Arg
+  { rejectValue: string } // Reject payload
+>("account/me", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get("/accounts/account");
+    return data as { account: Account };
+  } catch (err) {
+    const e = err as AxiosError<ApiErrorBody>;
+    const msg =
+      e.response?.data?.message ??
+      e.response?.data?.error ??
+      e.message ??
+      "No se pudo obtener la cuenta";
+    return rejectWithValue(msg);
+  }
 });
 
-export const findAccount = createAsyncThunk(
-  "account/find",
-  async (query: string, thunkAPI) => {
-    try {
-      const { data } = await api.get(
-        `/accounts/find?query=${encodeURIComponent(query)}`
-      );
-      return data as { account: Account | null };
-    } catch (e: any) {
-      return thunkAPI.rejectWithValue(
-        e?.response?.data?.message ?? "No se pudo buscar la cuenta"
-      );
-    }
+// GET /accounts/find?query=...
+export const findAccount = createAsyncThunk<
+  { account: Account | null }, // Return
+  string, // Arg: query
+  { rejectValue: string } // Reject
+>("account/find", async (query, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get(
+      `/accounts/find?query=${encodeURIComponent(query)}`
+    );
+    return data as { account: Account | null };
+  } catch (err) {
+    const e = err as AxiosError<ApiErrorBody>;
+    const msg =
+      e.response?.data?.message ??
+      e.response?.data?.error ??
+      e.message ??
+      "No se pudo buscar la cuenta";
+    return rejectWithValue(msg);
   }
-);
+});
 
 const slice = createSlice({
   name: "account",
@@ -55,7 +78,7 @@ const slice = createSlice({
       })
       .addCase(getMyAccount.rejected, (s, a) => {
         s.loading = false;
-        s.error = a.payload as string;
+        s.error = a.payload ?? "Error al obtener cuenta";
       })
 
       .addCase(findAccount.pending, (s) => {
@@ -68,7 +91,7 @@ const slice = createSlice({
       })
       .addCase(findAccount.rejected, (s, a) => {
         s.loading = false;
-        s.error = a.payload as string;
+        s.error = a.payload ?? "Error al buscar cuenta";
       });
   },
 });

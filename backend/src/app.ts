@@ -9,7 +9,23 @@ const app: Application = express();
 // Middlewares globales
 // ========================
 
+// Variable de entorno para prod (dominio de frontend)
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
+
 // Habilita CORS para permitir solicitudes de diferentes orígenes
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    // Ponelo en true solo si vas a usar cookies (httpOnly) o credenciales
+    credentials: false,
+  })
+);
+
+// Asegura preflight (opcional si arriba ya cubrís OPTIONS)
+app.options("*", cors());
+
 app.use(cors());
 
 // Permite recibir y parsear JSON en las solicitudes

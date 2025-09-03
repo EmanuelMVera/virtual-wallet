@@ -27,3 +27,9 @@ export type BankAccount = {
   cbu: string;
   alias?: string;
 };
+
+export type ApiErrorBody = {
+  message?: string;
+  error?: string;
+  details?: unknown;
+};

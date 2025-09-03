@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
-import type { User } from "../../types";
+import type { User, ApiErrorBody } from "../../types";
+import type { AxiosError } from "axios";
 
 interface AuthState {
   token: string | null;
@@ -15,28 +16,42 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const login = createAsyncThunk(
-  "auth/login",
-  async (credentials: { email: string; password: string }, thunkAPI) => {
-    try {
-      const { data } = await api.post("/users/login", credentials);
-      // Esperado: { token, user }
-      localStorage.setItem("token", data.token);
-      return data as { token: string; user: User };
-    } catch (e: any) {
-      return thunkAPI.rejectWithValue(
-        e?.response?.data?.message ?? "Login fallido"
-      );
-    }
+export const login = createAsyncThunk<
+  { token: string; user: User }, // Return
+  { email: string; password: string }, // Arg
+  { rejectValue: string } // Reject
+>("auth/login", async (credentials, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/users/login", credentials);
+    localStorage.setItem("token", data.token);
+    return data as { token: string; user: User };
+  } catch (err) {
+    const e = err as AxiosError<ApiErrorBody>;
+    const msg =
+      e.response?.data?.message ??
+      e.response?.data?.error ??
+      e.message ??
+      "Login fallido";
+    return rejectWithValue(msg);
   }
-);
+});
 
-export const me = createAsyncThunk("auth/me", async (_, thunkAPI) => {
+export const me = createAsyncThunk<
+  { user: User }, // Return
+  void, // Arg
+  { rejectValue: string }
+>("auth/me", async (_, { rejectWithValue }) => {
   try {
     const { data } = await api.get("/users/me");
     return data as { user: User };
-  } catch {
-    return thunkAPI.rejectWithValue("Sesión inválida");
+  } catch (err) {
+    const e = err as AxiosError<ApiErrorBody>;
+    const msg =
+      e.response?.data?.message ??
+      e.response?.data?.error ??
+      e.message ??
+      "Sesión inválida";
+    return rejectWithValue(msg);
   }
 });
 
@@ -62,14 +77,16 @@ const slice = createSlice({
       })
       .addCase(login.rejected, (s, a) => {
         s.loading = false;
-        s.error = a.payload as string;
+        s.error = a.payload ?? "Login fallido";
       })
+
       .addCase(me.fulfilled, (s, a) => {
         s.user = a.payload.user;
       })
-      .addCase(me.rejected, (s) => {
+      .addCase(me.rejected, (s, a) => {
         s.token = null;
         s.user = null;
+        s.error = a.payload ?? "Sesión inválida";
       });
   },
 });
