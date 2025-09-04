@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 import type { Transaction, ApiErrorBody } from "../../types";
 import type { AxiosError } from "axios";
+import type { RootState } from "../../app/store";
 
 interface TxState {
   items: Transaction[];
@@ -11,7 +12,7 @@ interface TxState {
 const initialState: TxState = { items: [], loading: false, error: null };
 
 export const listTransactions = createAsyncThunk<
-  { transactions: Transaction[] }, // Return
+  { transactions: Transaction[] },
   void,
   { rejectValue: string }
 >("tx/list", async (_, { rejectWithValue }) => {
@@ -29,14 +30,37 @@ export const listTransactions = createAsyncThunk<
   }
 });
 
+const isCBU = (q: string) => /^\d{10,}$/.test(q);
+
 export const transfer = createAsyncThunk<
-  { transaction: Transaction; newBalance: number }, // Return
-  { to: string; amount: number; concept?: string }, // Arg
-  { rejectValue: string }
->("tx/transfer", async (payload, { rejectWithValue }) => {
+  {
+    transaction: Transaction;
+    senderAccount: { id: number; balance: number };
+    receiverAccount: { id: number; balance: number };
+  },
+  { to: string; amount: number; concept?: string },
+  { state: RootState; rejectValue: string }
+>("tx/transfer", async (payload, { getState, rejectWithValue }) => {
   try {
-    const { data } = await api.post("/transactions/transfer", payload);
-    return data as { transaction: Transaction; newBalance: number };
+    const state = getState();
+    const senderAccountId = state.account.me?.id;
+    if (!senderAccountId)
+      return rejectWithValue("No se encontró tu cuenta (senderAccountId).");
+
+    const body: Record<string, unknown> = {
+      senderAccountId,
+      amount: payload.amount,
+    };
+    if (isCBU(payload.to)) body.receiverCbu = payload.to;
+    else body.receiverAlias = payload.to;
+
+    const { data } = await api.post("/transactions/transfer", body);
+    // backend devuelve: { message, transaction, senderAccount, receiverAccount }
+    return data as {
+      transaction: Transaction;
+      senderAccount: { id: number; balance: number };
+      receiverAccount: { id: number; balance: number };
+    };
   } catch (err) {
     const e = err as AxiosError<ApiErrorBody>;
     const msg =

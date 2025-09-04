@@ -17,11 +17,10 @@ const initialState: AccountState = {
   error: null,
 };
 
-// GET /accounts/account  -> { account }
 export const getMyAccount = createAsyncThunk<
-  { account: Account }, // Return (fulfilled)
-  void, // Arg
-  { rejectValue: string } // Reject payload
+  { account: Account },
+  void,
+  { rejectValue: string }
 >("account/me", async (_, { rejectWithValue }) => {
   try {
     const { data } = await api.get("/accounts/account");
@@ -37,16 +36,17 @@ export const getMyAccount = createAsyncThunk<
   }
 });
 
-// GET /accounts/find?query=...
+// Detecta si el input parece CBU (todo dígitos, típicamente largo) o alias
+const isCBU = (q: string) => /^\d{10,}$/.test(q);
+
 export const findAccount = createAsyncThunk<
-  { account: Account | null }, // Return
-  string, // Arg: query
-  { rejectValue: string } // Reject
+  { account: Account | null },
+  string,
+  { rejectValue: string }
 >("account/find", async (query, { rejectWithValue }) => {
   try {
-    const { data } = await api.get(
-      `/accounts/find?query=${encodeURIComponent(query)}`
-    );
+    const params = isCBU(query) ? { cbu: query } : { alias: query };
+    const { data } = await api.get("/accounts/find", { params });
     return data as { account: Account | null };
   } catch (err) {
     const e = err as AxiosError<ApiErrorBody>;

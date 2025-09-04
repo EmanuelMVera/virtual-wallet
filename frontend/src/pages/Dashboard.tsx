@@ -15,12 +15,21 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2>Saldo: {acc ? `${acc.balance} ${acc.currency}` : "—"}</h2>
+      <h2>Saldo: {acc ? acc.balance : "—"}</h2>
+      <p>
+        Alias: {acc?.alias} — CBU: {acc?.cbu}
+      </p>
+
       <h3>Últimas transacciones</h3>
       <ul>
         {tx.map((t) => (
           <li key={t.id}>
-            {t.createdAt}: {t.amount} {t.currency} → #{t.toAccountId}
+            [{t.type}] {t.amount}{" "}
+            {t.senderAccountId === null
+              ? "(depósito)"
+              : acc && t.senderAccountId === acc.id
+              ? "→ salida"
+              : "← entrada"}
           </li>
         ))}
       </ul>

@@ -1,7 +1,15 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { transfer } from "../features/transaction/transactionSlice";
-import { findAccount, clearLookup } from "../features/account/accountSlice";
+import {
+  listTransactions,
+  transfer,
+} from "../features/transaction/transactionSlice";
+import {
+  findAccount,
+  clearLookup,
+  getMyAccount,
+} from "../features/account/accountSlice";
 
 export default function TransferPage() {
   const [query, setQuery] = useState("");
@@ -23,6 +31,8 @@ export default function TransferPage() {
       setQuery("");
       dispatch(clearLookup());
       alert("Transferencia realizada");
+      dispatch(getMyAccount());
+      dispatch(listTransactions());
     }
   };
 
