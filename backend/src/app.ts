@@ -24,9 +24,9 @@ app.use(
 );
 
 // Asegura preflight (opcional si arriba ya cubrís OPTIONS)
-app.options("*", cors());
+// app.options("*", cors());
 
-app.use(cors());
+// app.use(cors());
 
 // Permite recibir y parsear JSON en las solicitudes
 app.use(express.json());

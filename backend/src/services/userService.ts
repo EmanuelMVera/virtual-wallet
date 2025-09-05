@@ -2,7 +2,7 @@ import { models } from "../db/db.js";
 import { generateAlias, generateCbu } from "../utils/accountUtils.js";
 import { generateToken } from "../utils/authUtils.js";
 import { Op } from "sequelize";
-import User from "../models/User"; // Ajusta el import según tu estructura/modelo
+import User from "../models/User.js"; // Ajusta el import según tu estructura/modelo
 
 export const registerUser = async ({ name, email, password }: any) => {
   const User = models.User;

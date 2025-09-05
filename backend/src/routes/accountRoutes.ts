@@ -1,3 +1,4 @@
+console.log("[routes] accountRoutes cargado");
 import { Router } from "express";
 import {
   getUserAccount,
@@ -6,6 +7,7 @@ import {
 
 const router = Router();
 
+router.get("/", getUserAccount);
 router.get("/account", getUserAccount);
 router.get("/find", findAccountByAliasOrCbu);
 

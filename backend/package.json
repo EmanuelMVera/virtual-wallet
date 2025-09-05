@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "dev": "nodemon --watch src --ext ts --exec \"npm run build && node dist/server.js\"",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",

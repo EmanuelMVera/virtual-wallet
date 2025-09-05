@@ -1,21 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": ".",
     "resolveJsonModule": true,
-    "noEmit": false,
-    "types": ["node", "jest"],
-    "isolatedModules": true
+    "sourceMap": true,
+    "types": ["node", "jest"]
   },
-  "include": ["src", "tests", "custom.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "custom.d.ts"]
 }
