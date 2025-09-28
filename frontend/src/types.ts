@@ -16,12 +16,13 @@ export type Account = {
 
 export type Transaction = {
   id: number;
-  senderAccountId: number | null;
-  receiverAccountId: number;
+  type: "deposit" | "transfer" | "transfer_in" | "transfer_out";
   amount: number;
-  type: "transfer" | "deposit";
-  timestamp?: string; // si tu modelo lo expone así
+  timestamp?: string; // puede llegar undefined en algunos casos
+  senderAccountId?: number | null;
+  receiverAccountId?: number | null;
 };
+
 
 export type BankAccount = {
   id: number;

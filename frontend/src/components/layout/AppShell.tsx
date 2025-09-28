@@ -1,25 +1,45 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAppSelector } from "../../app/hooks";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useEffect, useMemo } from "react";
+import { getMyAccount } from "../../features/account/accountSlice";
 
 export default function AppShell() {
   const { pathname } = useLocation();
+  const dispatch = useAppDispatch();
   const acc = useAppSelector((s) => s.account.me);
+
+  useEffect(() => {
+    if (!acc) dispatch(getMyAccount());
+  }, [acc, dispatch]);
+
+  const money = useMemo(
+    () =>
+      acc
+        ? new Intl.NumberFormat("es-AR", {
+            style: "currency",
+            currency: "ARS",
+            minimumFractionDigits: 2,
+          }).format(Number(acc.balance))
+        : "—",
+    [acc]
+  );
 
   return (
     <div className="min-h-dvh flex flex-col bg-gray-50">
+      {/* header */}
       <header className="px-4 py-3 bg-blue-600 text-white shadow">
         <div className="text-xs opacity-80">Saldo disponible</div>
-        <div className="text-2xl font-semibold">
-          {acc ? `$ ${Number(acc.balance).toFixed(2)}` : "—"}
-        </div>
+        <div className="text-2xl font-semibold">{money}</div>
       </header>
 
-      <main className="flex-1 p-4">
+      {/* contenido centrado mobile + espacio para la bottom bar */}
+      <main className="flex-1 p-4 pb-20 mx-auto w-full max-w-screen-sm">
         <Outlet />
       </main>
 
+      {/* bottom nav */}
       <nav className="sticky bottom-0 bg-white border-t">
-        <ul className="grid grid-cols-5 text-sm">
+        <ul className="mx-auto w-full max-w-screen-sm grid grid-cols-5 text-sm">
           {[
             { to: "/dashboard", label: "Inicio" },
             { to: "/activity", label: "Mov." },
@@ -28,12 +48,16 @@ export default function AppShell() {
             { to: "/profile", label: "Perfil" },
           ].map((i) => (
             <li key={i.to} className="text-center">
-              <Link
+              <NavLink
                 to={i.to}
-                className={`block py-2 ${pathname === i.to ? "text-blue-600 font-medium" : "text-gray-600"}`}
+                className={({ isActive }) =>
+                  `block py-2 ${isActive || pathname.startsWith(i.to)
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-600"}`
+                }
               >
                 {i.label}
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
