@@ -9,6 +9,7 @@ import TransferPage from "../pages/TransferPage";
 import Placeholder from "../pages/Placeholder";
 import PayHubPage from "../pages/PayHubPage";
 import ActivityPage from "../pages/ActivityPage";
+import AddMoneyPage from "../pages/AddMoneyPage";
 
 export default function AppRouter() {
   return (
@@ -30,9 +31,9 @@ export default function AppRouter() {
           <Route path="/transfer" element={<TransferPage />} />
           <Route path="/pay" element={<PayHubPage />} />
           <Route path="/activity" element={<ActivityPage />} />
+          <Route path="/add-money" element={<AddMoneyPage />} />
 
           {/* placeholders para completar luego */}
-          <Route path="/add-money" element={<Placeholder title="Agregar dinero" />} />
           <Route path="/profile" element={<Placeholder title="Perfil" />} />
         </Route>
       </Routes>
