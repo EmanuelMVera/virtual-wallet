@@ -1,4 +1,3 @@
-// src/features/bankAccount/bankAccountSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/axios";
 import type { BankAccount, ApiErrorBody } from "../../types";
