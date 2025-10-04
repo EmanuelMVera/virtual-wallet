@@ -36,7 +36,7 @@ export const depositFromBank = createAsyncThunk<
     bankAccount: { id: number; balance: number };
     walletAccount: { id: number; balance: number };
   },
-  { bankAccountId: number; amount: number },
+  { bankAccountId: number; walletAccountId: number;  amount: number },
   { state: RootState; rejectValue: string }
 >(
   "ba/deposit",
