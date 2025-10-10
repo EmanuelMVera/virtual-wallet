@@ -6,10 +6,11 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import Dashboard from "../pages/Dashboard";
 import TransferPage from "../pages/TransferPage";
-import Placeholder from "../pages/Placeholder";
 import PayHubPage from "../pages/PayHubPage";
 import ActivityPage from "../pages/ActivityPage";
 import AddMoneyPage from "../pages/AddMoneyPage";
+import ProfilePage from "../pages/ProfilePage";
+// import Placeholder from "../pages/Placeholder";
 
 export default function AppRouter() {
   return (
@@ -32,9 +33,7 @@ export default function AppRouter() {
           <Route path="/pay" element={<PayHubPage />} />
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/add-money" element={<AddMoneyPage />} />
-
-          {/* placeholders para completar luego */}
-          <Route path="/profile" element={<Placeholder title="Perfil" />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>
