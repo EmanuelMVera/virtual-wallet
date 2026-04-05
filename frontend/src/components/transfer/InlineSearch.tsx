@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { findAccount, clearLookup } from "../../features/account/accountSlice";
+import { findAccount, clearLookup } from "../../features/userSlice";
 
 export default function InlineSearch({
   value,
@@ -12,10 +12,10 @@ export default function InlineSearch({
   const dispatch = useAppDispatch();
   const lookup = useAppSelector((s) => s.account.lookup);
   const [open, setOpen] = useState(false);
-  const tRef = useRef<number | null>(null); 
+  const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    if (tRef.current) window.clearTimeout(tRef.current);
+    if (tRef.current !== undefined) window.clearTimeout(tRef.current);
     if (!value || value.trim().length < 3) {
       setOpen(false);
       return;
@@ -24,7 +24,7 @@ export default function InlineSearch({
       dispatch(findAccount(value)).then(() => setOpen(true));
     }, 300);
     return () => {
-      if (tRef.current) window.clearTimeout(tRef.current);
+      if (tRef.current !== undefined) window.clearTimeout(tRef.current);
     };
   }, [value, dispatch]);
 

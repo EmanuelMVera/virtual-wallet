@@ -5,7 +5,7 @@ import { JwtPayload } from "jsonwebtoken";
  * Extiende el payload estándar con propiedades específicas de la app.
  */
 export interface CustomJwtPayload extends JwtPayload {
-  id: number; // Forzamos number, ya que tus IDs son numéricos en DB
+  dni: string;
   email?: string;
 }
 

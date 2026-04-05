@@ -1,39 +1,39 @@
-import { Model, DataTypes, Sequelize, Optional } from "sequelize";
+import { Model, DataTypes, Sequelize } from "sequelize";
 import bcrypt from "bcryptjs";
 
-/**
- * Modelo de usuario de la billetera virtual.
- */
 interface UserAttributes {
-  id: number;
-  name: string;
+  dni: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone: string;
   password: string;
+  alias: string;
+  balance: number;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
-
-export class User extends Model<UserAttributes, UserCreationAttributes> {
-  declare id: number;
-  declare name: string;
+export class User extends Model<UserAttributes> implements UserAttributes {
+  declare dni: string;
+  declare firstName: string;
+  declare lastName: string;
   declare email: string;
+  declare phone: string;
   declare password: string;
+  declare alias: string;
+  declare balance: number;
 
-  /**
-   * Compara la contraseña ingresada con el hash almacenado.
-   */
   public async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.getDataValue("password"));
+    return bcrypt.compare(candidatePassword, this.password);
   }
 
-  /**
-   * Define las relaciones con otros modelos.
-   */
   static associate(models: any) {
-    this.hasMany(models.Account, { foreignKey: "userId", as: "accounts" });
-    this.hasMany(models.BankAccount, {
-      foreignKey: "userId",
-      as: "bankAccounts",
+    this.hasMany(models.Transaction, {
+      foreignKey: "senderDni",
+      as: "sentTransactions",
+    });
+    this.hasMany(models.Transaction, {
+      foreignKey: "receiverDni",
+      as: "receivedTransactions",
     });
   }
 }
@@ -41,12 +41,17 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 export default (sequelize: Sequelize) => {
   User.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+      dni: {
+        type: DataTypes.STRING,
         primaryKey: true,
+        allowNull: false,
+        unique: true,
       },
-      name: {
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      lastName: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -54,13 +59,25 @@ export default (sequelize: Sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validate: {
-          isEmail: true,
-        },
+        validate: { isEmail: true },
+      },
+      phone: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      alias: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      balance: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        defaultValue: 0,
       },
     },
     {
@@ -70,29 +87,17 @@ export default (sequelize: Sequelize) => {
       timestamps: true,
       hooks: {
         beforeCreate: async (user) => {
-          const email = user.getDataValue("email");
-          if (email) user.setDataValue("email", email.toLowerCase());
-
-          const password = user.getDataValue("password");
-          if (password) {
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(password, salt);
-            user.setDataValue("password", hash);
-          }
+          const email = user.email?.toLowerCase();
+          if (email) user.email = email;
+          if (user.password) user.password = await bcrypt.hash(user.password, 10);
+          if (!user.alias) user.alias = `${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}`;
         },
         beforeUpdate: async (user) => {
-          const email = user.getDataValue("email");
-          if (email && user.changed("email")) {
-            user.setDataValue("email", email.toLowerCase());
+          if (user.changed("email") && user.email) {
+            user.email = user.email.toLowerCase();
           }
-
-          if (user.changed("password")) {
-            const password = user.getDataValue("password");
-            if (password) {
-              const salt = await bcrypt.genSalt(10);
-              const hash = await bcrypt.hash(password, salt);
-              user.setDataValue("password", hash);
-            }
+          if (user.changed("password") && user.password) {
+            user.password = await bcrypt.hash(user.password, 10);
           }
         },
       },

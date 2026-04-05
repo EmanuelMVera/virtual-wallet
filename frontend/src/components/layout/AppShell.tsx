@@ -1,62 +1,81 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { useEffect, useMemo } from "react";
-import { getMyAccount } from "../../features/account/accountSlice";
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useEffect, useMemo } from 'react';
+import { getMe } from '../../features/userSlice';
+
+const NAV_ITEMS = [
+  { to: '/dashboard', label: 'Inicio', icon: '🏠' },
+  { to: '/activity', label: 'Movimientos', icon: '📊' },
+  { to: '/pay', label: 'Pagar', icon: '💸' },
+  { to: '/add-money', label: 'Recargar', icon: '➕' },
+  { to: '/profile', label: 'Perfil', icon: '👤' },
+];
 
 export default function AppShell() {
   const { pathname } = useLocation();
   const dispatch = useAppDispatch();
-  const acc = useAppSelector((s) => s.account.me);
+  const acc = useAppSelector((s) => s.user);
 
   useEffect(() => {
-    if (!acc) dispatch(getMyAccount());
+    if (!acc) dispatch(getMe());
   }, [acc, dispatch]);
 
-  const money = useMemo(
-    () =>
-      acc
-        ? new Intl.NumberFormat("es-AR", {
-            style: "currency",
-            currency: "ARS",
-            minimumFractionDigits: 2,
-          }).format(Number(acc.balance))
-        : "—",
-    [acc]
-  );
+  const isActive = (to: string) => pathname === to || pathname.startsWith(to);
 
   return (
-    <div className="min-h-dvh flex flex-col bg-gray-50">
-      {/* header */}
-      <header className="px-4 py-3 bg-blue-600 text-white shadow">
-        <div className="text-xs opacity-80">Saldo disponible</div>
-        <div className="text-2xl font-semibold">{money}</div>
+    <div className="min-h-dvh flex flex-col md:flex-row bg-gray-50">
+      <header className="px-4 py-3 bg-blue-600 text-white shadow-md md:px-6 md:py-4">
+        <div className="text-xs opacity-80 md:text-sm">Saldo disponible</div>
       </header>
 
-      {/* contenido centrado mobile + espacio para la bottom bar */}
-      <main className="flex-1 p-4 pb-20 mx-auto w-full max-w-screen-sm">
-        <Outlet />
-      </main>
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200 shadow-sm">
+          <nav className="flex-1 py-6 px-3">
+            <ul className="space-y-2">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive: active }) =>
+                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        active
+                          ? 'bg-blue-50 text-blue-600 font-medium border-l-4 border-blue-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`
+                    }
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-sm md:text-base">{item.label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
 
-      {/* bottom nav */}
-      <nav className="sticky bottom-0 bg-white border-t">
-        <ul className="mx-auto w-full max-w-screen-sm grid grid-cols-5 text-sm">
-          {[
-            { to: "/dashboard", label: "Inicio" },
-            { to: "/activity", label: "Mov." },
-            { to: "/pay", label: "Pagar" },
-            { to: "/add-money", label: "Recargar" },
-            { to: "/profile", label: "Perfil" },
-          ].map((i) => (
-            <li key={i.to} className="text-center">
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 md:p-6 pb-20 md:pb-6 max-w-full">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+
+      <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+        <ul className="grid grid-cols-5 gap-0">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.to}>
               <NavLink
-                to={i.to}
-                className={({ isActive }) =>
-                  `block py-2 ${isActive || pathname.startsWith(i.to)
-                    ? "text-blue-600 font-medium"
-                    : "text-gray-600"}`
+                to={item.to}
+                className={({ isActive: active }) =>
+                  `flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors ${
+                    active
+                      ? 'text-blue-600 font-semibold'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`
                 }
               >
-                {i.label}
+                <span className="text-lg mb-1">{item.icon}</span>
+                <span className="truncate max-w-[60px]">{item.label}</span>
               </NavLink>
             </li>
           ))}

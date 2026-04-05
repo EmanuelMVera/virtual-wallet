@@ -2,21 +2,18 @@ import { Router } from "express";
 import {
   register,
   login,
-  logout,
   getMe,
+  updateProfile,
+  updatePassword,
 } from "../controllers/userController.js";
-import {
-  registerValidation,
-  loginValidation,
-} from "../middlewares/validationMiddleware.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-router.post("/register", registerValidation, register);
-router.post("/login", loginValidation, login);
-router.post("/logout", logout);
-// Endpoint protegido para obtener información del usuario autenticado
+router.post("/register", register);
+router.post("/login", login);
 router.get("/me", protect, getMe);
+router.put("/profile", protect, updateProfile);
+router.put("/password", protect, updatePassword);
 
 export default router;

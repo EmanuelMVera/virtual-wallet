@@ -1,107 +1,75 @@
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { getMyAccount } from "../features/account/accountSlice";
-import { listTransactions } from "../features/transaction/transactionSlice";
-import { formatMoney } from "../utils/format";
-import Card from "../components/ui/Card";
-import Skeleton from "../components/ui/Skeleton";
-import SectionTitle from "../components/ui/SectionTitle";
-import TxItem from "../components/transactions/TxItem";
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTransactions } from '../hooks/useTransaction';
+import { useAppSelector } from '../app/hooks';
+import { formatMoney } from '../utils/format';
 
 export default function Dashboard() {
-  const dispatch = useAppDispatch();
-  const acc = useAppSelector((s) => s.account.me);
-  const accLoading = useAppSelector((s) => s.account.loading);
-  const accErr = useAppSelector((s) => s.account.error);
-  const tx = useAppSelector((s) => s.transaction.items);
-  const txLoading = useAppSelector((s) => s.transaction.loading);
+  const { user } = useAppSelector(state => state.user);
+  const { transactions, fetchTransactions } = useTransactions();
 
   useEffect(() => {
-    dispatch(getMyAccount());
-    dispatch(listTransactions());
-  }, [dispatch]);
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   return (
-    <div className="min-h-dvh bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-10">
       {/* Hero saldo */}
-      <div className="bg-[#009EE3] text-white">
-        <div className="mx-auto w-full max-w-screen-sm px-4 py-6">
-          <p className="text-sm/5 opacity-90">Saldo disponible</p>
-          {accLoading ? (
-            <Skeleton className="h-9 w-40 mt-1" />
-          ) : (
-            <p className="mt-1 text-3xl font-semibold">
-              {acc ? formatMoney(acc.balance) : "--"}
-            </p>
-          )}
-          <p className="mt-2 text-xs/5 opacity-90">
-            {acc ? (
-              <>
-                Alias: <span className="font-medium">{acc.alias}</span>{" "}
-                · CBU: <span className="font-medium">{acc.cbu}</span>
-              </>
-            ) : accErr ? (
-              <span className="text-red-100">No se pudo cargar la cuenta</span>
-            ) : (
-              <span className="opacity-70">Cargando…</span>
-            )}
-          </p>
+      <div className="bg-[#009EE3] text-white pt-8 pb-14 px-4">
+        <div className="mx-auto max-w-screen-sm">
+          <p className="text-sm opacity-90">Dinero disponible</p>
+          <h2 className="text-4xl font-bold mt-1">
+            {user ? formatMoney(user.balance) : 'Cargando...'}
+          </h2>
         </div>
       </div>
 
       {/* Acciones rápidas */}
-      <div className="mx-auto w-full max-w-screen-sm px-4 -mt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card className="p-4 text-center" >
-            <Link to="/transfer" className="block">
-              <div className="text-sm font-medium text-gray-900">Transferir</div>
-              <div className="text-xs text-gray-500">Enviar dinero</div>
-            </Link>
-          </Card>
-          <Card className="p-4 text-center">
-            <Link to="/pay" className="block">
-              <div className="text-sm font-medium text-gray-900">Pagar</div>
-              <div className="text-xs text-gray-500">Próximamente</div>
-            </Link>
-          </Card>
-          <Card className="p-4 text-center">
-            <Link to="/add-money" className="block">
-              <div className="text-sm font-medium text-gray-900">Recargar</div>
-              <div className="text-xs text-gray-500">Agregar dinero</div>
-            </Link>
-          </Card>
-          <Card className="p-4 text-center">
-            <Link to="/activity" className="block">
-              <div className="text-sm font-medium text-gray-900">Movimientos</div>
-              <div className="text-xs text-gray-500">Ver todo</div>
-            </Link>
-          </Card>
+      <div className="mx-auto w-full max-w-screen-sm px-4 -mt-8 relative z-10">
+        <div className="grid grid-cols-4 gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <Link to="/transfer" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
+            <div className="bg-gray-100 p-3 rounded-full text-xl">💸</div>
+            <span className="text-xs font-semibold">Transferir</span>
+          </Link>
+          <Link to="/pay" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
+            <div className="bg-gray-100 p-3 rounded-full text-xl">🛒</div>
+            <span className="text-xs font-semibold">Pagar</span>
+          </Link>
+          <Link to="/add-money" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
+            <div className="bg-gray-100 p-3 rounded-full text-xl">💳</div>
+            <span className="text-xs font-semibold">Ingresar</span>
+          </Link>
+          <Link to="/activity" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
+            <div className="bg-gray-100 p-3 rounded-full text-xl">📊</div>
+            <span className="text-xs font-semibold">Actividad</span>
+          </Link>
         </div>
       </div>
 
       {/* Últimas transacciones */}
-      <div className="mx-auto w-full max-w-screen-sm px-4 py-6">
-        <SectionTitle>Últimas transacciones</SectionTitle>
-        <Card className="mt-3 p-3">
-          {txLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-5/6" />
-              <Skeleton className="h-5 w-4/6" />
-            </div>
-          ) : tx.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">
-              Aún no hay movimientos
-            </div>
+      <div className="mx-auto w-full max-w-screen-sm px-4 py-8">
+        <h3 className="font-bold text-gray-800 mb-4">Última actividad</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {transactions.length > 0 ? (
+            transactions.slice(0, 5).map((tx: any) => (
+              <div key={tx.id} className="flex justify-between items-center p-4 border-b border-gray-50 last:border-0">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {tx.type === 'load' ? 'Ingreso de dinero' : tx.type === 'transfer' ? 'Transferencia' : 'Retiro'}
+                  </p>
+                  <p className="text-xs text-gray-500">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                </div>
+                <span className={`font-bold ${tx.senderDni === user?.dni ? 'text-gray-900' : 'text-green-600'}`}>
+                  {tx.senderDni === user?.dni ? '-' : '+'} {formatMoney(tx.amount)}
+                </span>
+              </div>
+            ))
           ) : (
-            <ul>
-              {tx.slice(0, 6).map((t) => (
-                <TxItem key={t.id} tx={t} myAccountId={acc?.id} />
-              ))}
-            </ul>
+            <div className="p-6 text-center text-gray-500 text-sm">
+              Aún no tenés movimientos recientes.
+            </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );

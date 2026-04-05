@@ -18,15 +18,9 @@ app.use(
     origin: FRONTEND_ORIGIN,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    // Ponelo en true solo si vas a usar cookies (httpOnly) o credenciales
     credentials: false,
   })
 );
-
-// Asegura preflight (opcional si arriba ya cubrís OPTIONS)
-// app.options("*", cors());
-
-// app.use(cors());
 
 // Permite recibir y parsear JSON en las solicitudes
 app.use(express.json());

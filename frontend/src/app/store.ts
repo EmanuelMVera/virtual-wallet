@@ -1,11 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import auth from "../features/auth/authSlice";
-import account from "../features/account/accountSlice";
-import transaction from "../features/transaction/transactionSlice";
-import bankAccount from "../features/bankAccount/bankAccountSlice";
+import userReducer from "../features/userSlice";
+import transactionReducer from "../features/transactionSlice";
 
 export const store = configureStore({
-  reducer: { auth, account, transaction, bankAccount },
+  reducer: { 
+    user: userReducer, 
+    transaction: transactionReducer 
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

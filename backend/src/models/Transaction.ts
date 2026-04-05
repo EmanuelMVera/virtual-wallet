@@ -1,39 +1,35 @@
-import { Model, DataTypes, Sequelize, Optional } from "sequelize";
+import { Model, DataTypes, Sequelize } from "sequelize";
 
-/**
- * Modelo para transacciones (transferencias y depósitos).
- */
 interface TransactionAttributes {
   id: number;
-  senderAccountId: number | null;
-  receiverAccountId: number;
-  amount: string;
-  timestamp: Date;
-  type: string;
+  senderDni: string | null;
+  receiverDni: string;
+  amount: number;
+  type: "load" | "withdraw" | "transfer";
+  createdAt: Date;
 }
 
-interface TransactionCreationAttributes
-  extends Optional<TransactionAttributes, "id" | "timestamp" | "type"> {}
-
 export class Transaction
-  extends Model<TransactionAttributes, TransactionCreationAttributes>
+  extends Model<TransactionAttributes>
   implements TransactionAttributes
 {
   declare id: number;
-  declare senderAccountId: number | null;
-  declare receiverAccountId: number;
-  declare amount: string;
-  declare timestamp: Date;
-  declare type: string;
+  declare senderDni: string | null;
+  declare receiverDni: string;
+  declare amount: number;
+  declare type: "load" | "withdraw" | "transfer";
+  declare createdAt: Date;
 
   static associate(models: any) {
-    this.belongsTo(models.Account, {
-      foreignKey: "senderAccountId",
-      as: "senderAccount",
+    this.belongsTo(models.User, {
+      foreignKey: "senderDni",
+      targetKey: "dni",
+      as: "sender",
     });
-    this.belongsTo(models.Account, {
-      foreignKey: "receiverAccountId",
-      as: "receiverAccount",
+    this.belongsTo(models.User, {
+      foreignKey: "receiverDni",
+      targetKey: "dni",
+      as: "receiver",
     });
   }
 }
@@ -46,46 +42,44 @@ export default (sequelize: Sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      senderAccountId: {
-        type: DataTypes.INTEGER,
-        allowNull: true, // Permite null para depósitos desde banco
+      senderDni: {
+        type: DataTypes.STRING,
+        allowNull: true,
         references: {
-          model: "accounts",
-          key: "id",
+          model: "users",
+          key: "dni",
         },
       },
-      receiverAccountId: {
-        type: DataTypes.INTEGER,
+      receiverDni: {
+        type: DataTypes.STRING,
         allowNull: false,
         references: {
-          model: "accounts",
-          key: "id",
+          model: "users",
+          key: "dni",
         },
       },
       amount: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(12, 2),
         allowNull: false,
-        validate: {
-          min: 0.01, // Una transacción debe tener un monto positivo
-        },
+        validate: { min: 0.01 },
       },
-      timestamp: {
+      type: {
+        type: DataTypes.ENUM("load", "withdraw", "transfer"),
+        allowNull: false,
+      },
+      createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
-      },
-      type: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: "transfer", // Por defecto es transferencia
       },
     },
     {
       sequelize,
       modelName: "Transaction",
       tableName: "transactions",
-      timestamps: false, // Las transacciones generalmente tienen su propio timestamp
+      timestamps: false,
     }
   );
+
   return Transaction;
 };

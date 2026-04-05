@@ -1,27 +1,32 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AppShell from "../components/layout/AppShell";
-import RequireAuth from "./RequireAuth";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AppShell from '../components/layout/AppShell';
+import RequireAuth from './RequireAuth';
 
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import Dashboard from "../pages/Dashboard";
-import TransferPage from "../pages/TransferPage";
-import PayHubPage from "../pages/PayHubPage";
-import ActivityPage from "../pages/ActivityPage";
-import AddMoneyPage from "../pages/AddMoneyPage";
-import ProfilePage from "../pages/ProfilePage";
-// import Placeholder from "../pages/Placeholder";
+// Páginas Públicas
+import LandingPage from '../pages/LandingPage';
+import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+
+// Páginas Privadas
+import Dashboard from '../pages/Dashboard';
+import ProfilePage from '../pages/ProfilePage';
+
+// Importaciones futuras (para los botones del Dashboard)
+// import TransferPage from '../pages/TransferPage';
+// import AddMoneyPage from '../pages/AddMoneyPage';
+// import ActivityPage from '../pages/ActivityPage';
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* públicas */}
-        <Route path="/" element={<LoginPage />} />
+        {/* Rutas Públicas */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* privadas (envueltas en AppShell) */}
-        <Route
+        {/* Rutas Privadas (Envueltas en layout y protección de sesión) */}
+        <Route 
           element={
             <RequireAuth>
               <AppShell />
@@ -29,11 +34,12 @@ export default function AppRouter() {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transfer" element={<TransferPage />} />
-          <Route path="/pay" element={<PayHubPage />} />
-          <Route path="/activity" element={<ActivityPage />} />
-          <Route path="/add-money" element={<AddMoneyPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          
+          {/* Rutas pendientes de implementar desde el Dashboard */}
+          {/* <Route path="/transfer" element={<TransferPage />} /> */}
+          {/* <Route path="/add-money" element={<AddMoneyPage />} /> */}
+          {/* <Route path="/activity" element={<ActivityPage />} /> */}
         </Route>
       </Routes>
     </BrowserRouter>
