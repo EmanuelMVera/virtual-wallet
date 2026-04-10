@@ -12,54 +12,50 @@ export default function ActivityPage() {
     dispatch(fetchHistory());
   }, [dispatch]);
 
-  // Helper para saber cómo renderizar cada item del historial
   const getTransactionDetails = (tx: any) => {
     const isSender = tx.senderId === user?.id;
-    if (tx.type === 'load' || tx.type === 'deposit') return { title: 'Ingreso', sign: '+', color: 'text-green-600', icon: '💰' };
-    if (tx.type === 'withdraw') return { title: 'Retiro', sign: '-', color: 'text-gray-900', icon: '🏧' };
-    
+    if (tx.type === 'load' || tx.type === 'deposit') return { title: 'Ingreso', sign: '+', color: 'text-emerald-600', icon: '💰' };
+    if (tx.type === 'withdraw') return { title: 'Retiro', sign: '-', color: 'text-slate-900', icon: '🏧' };
+
     if (isSender) {
       const r = tx.receiver;
       const name = r ? `${r.firstName} ${r.lastName}` : 'Usuario';
-      return { title: `A ${name}`, sign: '-', color: 'text-red-500', icon: '💸'  };
-    } else {
-      const s = tx.sender;
-      const name = s ? `${s.firstName} ${s.lastName}` : 'Usuario';
-      return { title: `De ${name}`, sign: '+', color: 'text-green-600', icon: '📥' };
+      return { title: `A ${name}`, sign: '-', color: 'text-rose-600', icon: '💸' };
     }
+
+    const s = tx.sender;
+    const name = s ? `${s.firstName} ${s.lastName}` : 'Usuario';
+    return { title: `De ${name}`, sign: '+', color: 'text-emerald-600', icon: '📥' };
   };
 
   return (
-    <div className="mx-auto max-w-screen-sm p-4">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Tu actividad</h1>
-      
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[200px]">
-        {loading && <div className="p-8 text-center text-gray-500">Actualizando movimientos...</div>}
-        
+    <div>
+      <h1 className="page-title">Tu actividad</h1>
+      <p className="page-subtitle mt-1">Seguimiento completo de ingresos, retiros y transferencias.</p>
+
+      <div className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        {loading && <div className="p-8 text-center text-slate-500">Actualizando movimientos...</div>}
+
         {!loading && history.length === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <span className="text-4xl mb-3">📭</span>
-            <h3 className="font-semibold text-gray-800">Aún no hay ninguna actividad registrada</h3>
-            <p className="text-sm text-gray-500 mt-1">Acá vas a ver tus ingresos, retiros y transferencias.</p>
+            <span className="text-4xl">📭</span>
+            <h3 className="mt-3 font-semibold text-slate-800">Aún no hay actividad registrada</h3>
+            <p className="text-sm text-slate-500">Acá vas a ver ingresos, retiros y transferencias.</p>
           </div>
         )}
 
         {!loading && history.map((tx) => {
           const { title, sign, color, icon } = getTransactionDetails(tx);
           return (
-            <div key={tx.id} className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">
-                  {icon}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800 text-sm">{title}</div>
-                  <div className="text-xs text-gray-500">{new Date(tx.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</div>
+            <div key={tx.id} className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 last:border-0 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-lg">{icon}</div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-800">{title}</p>
+                  <p className="text-xs text-slate-500">{new Date(tx.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p>
                 </div>
               </div>
-              <div className={`font-bold text-base tracking-tight ${color}`}>
-                {sign} {formatMoney(tx.amount)}
-              </div>
+              <div className={`text-sm font-bold tracking-tight sm:text-base ${color}`}>{sign} {formatMoney(tx.amount)}</div>
             </div>
           );
         })}

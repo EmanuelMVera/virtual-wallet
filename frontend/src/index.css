@@ -1,12 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 243, 244, 246; /* Gris muy claro tipo MP */
+  --bg: #f3f7ff;
+  --surface: #ffffff;
+  --surface-soft: #f8fbff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --brand: #2563eb;
+  --brand-dark: #1d4ed8;
 }
 
-html, body, #root { 
-  height: 100%; 
+html,
+body,
+#root {
+  min-height: 100%;
   margin: 0;
-  background-color: rgb(var(--background-rgb));
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.12), transparent 25%),
+    radial-gradient(circle at 85% 20%, rgba(14, 165, 233, 0.1), transparent 30%),
+    linear-gradient(180deg, #eef4ff 0%, #f8fbff 45%, #f5f9ff 100%);
+}
+
+body {
+  font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+}
+
+.soft-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.page-shell {
+  width: min(1100px, 100%);
+  margin-inline: auto;
+  padding: 1rem;
+}
+
+.page-title {
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  font-weight: 800;
+  color: #0b1120;
+}
+
+.page-subtitle {
+  color: var(--muted);
+  font-size: 0.95rem;
 }

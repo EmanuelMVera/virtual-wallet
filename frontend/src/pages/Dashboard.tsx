@@ -15,84 +15,74 @@ export default function Dashboard() {
 
   const getTransactionDetails = (tx: any) => {
     const isSender = tx.senderId === user?.id;
-    if (tx.type === 'load' || tx.type === 'deposit') return { title: 'Ingreso', sign: '+', color: 'text-green-600' };
-    if (tx.type === 'withdraw') return { title: 'Retiro', sign: '-', color: 'text-gray-900' };
-    
+    if (tx.type === 'load' || tx.type === 'deposit') return { title: 'Ingreso', sign: '+', color: 'text-emerald-600', icon: '📥' };
+    if (tx.type === 'withdraw') return { title: 'Retiro', sign: '-', color: 'text-slate-900', icon: '🏧' };
+
     if (isSender) {
       const r = tx.receiver;
-      // Mostramos Nombre, Apellido y Alias entre paréntesis para ser descriptivos
       const displayName = r ? `${r.firstName} ${r.lastName} (${r.alias})` : 'Usuario';
-      return { title: `A ${displayName}`, sign: '-', color: 'text-red-500' };
-    } else {
-      const s = tx.sender;
-      const displayName = s ? `${s.firstName} ${s.lastName} (${s.alias})` : 'Usuario';
-      return { title: `De ${displayName}`, sign: '+', color: 'text-green-600' };
+      return { title: `A ${displayName}`, sign: '-', color: 'text-rose-600', icon: '💸' };
     }
+
+    const s = tx.sender;
+    const displayName = s ? `${s.firstName} ${s.lastName} (${s.alias})` : 'Usuario';
+    return { title: `De ${displayName}`, sign: '+', color: 'text-emerald-600', icon: '💰' };
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] pb-10">
-      <div className="bg-[#009EE3] text-white pt-8 pb-16 px-4">
-        <div className="mx-auto max-w-screen-sm">
-          <p className="text-sm font-medium opacity-90">Dinero disponible</p>
-          <h2 className="text-4xl font-bold mt-1 tracking-tight">{user ? formatMoney(user.balance) : '...'}</h2>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <section className="rounded-3xl bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500 p-6 text-white shadow-2xl shadow-blue-200/60">
+        <p className="text-sm font-semibold text-blue-100">Dinero disponible</p>
+        <h2 className="mt-2 text-4xl font-black tracking-tight">{user ? formatMoney(user.balance) : '...'}</h2>
+        <p className="mt-2 text-sm text-blue-100">Tu balance se actualiza automáticamente con cada operación.</p>
+      </section>
 
-      <div className="mx-auto w-full max-w-screen-sm px-4 -mt-8 relative z-10">
-        <div className="grid grid-cols-4 gap-2 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
-          <Link to="/transfer" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-            <div className="bg-gray-50 hover:bg-blue-50 p-3 rounded-full text-2xl transition">💸</div>
-            <span className="text-xs font-semibold">Transferir</span>
-          </Link>
-          <Link to="/add-money" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-            <div className="bg-gray-50 hover:bg-blue-50 p-3 rounded-full text-2xl transition">💳</div>
-            <span className="text-xs font-semibold">Ingresar</span>
-          </Link>
-          <Link to="/withdraw" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-            <div className="bg-gray-50 hover:bg-blue-50 p-3 rounded-full text-2xl transition">🏧</div>
-            <span className="text-xs font-semibold">Retirar</span>
-          </Link>
-          <Link to="/activity" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-            <div className="bg-gray-50 hover:bg-blue-50 p-3 rounded-full text-2xl transition">📊</div>
-            <span className="text-xs font-semibold">Actividad</span>
-          </Link>
-        </div>
-      </div>
+      <section className="grid grid-cols-2 gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-4">
+        <QuickLink to="/transfer" icon="💸" label="Transferir" />
+        <QuickLink to="/add-money" icon="💳" label="Ingresar" />
+        <QuickLink to="/withdraw" icon="🏧" label="Retirar" />
+        <QuickLink to="/activity" icon="📊" label="Actividad" />
+      </section>
 
-      <div className="mx-auto w-full max-w-screen-sm px-4 py-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-gray-800">Última actividad</h3>
-          <Link to="/activity" className="text-sm font-semibold text-blue-600 hover:underline">Ver todo</Link>
+      <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <h3 className="font-bold text-slate-800">Última actividad</h3>
+          <Link to="/activity" className="text-sm font-semibold text-blue-700 hover:underline">Ver todo</Link>
         </div>
-        
-       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {history.length > 0 ? (
-            history.slice(0, 5).map((tx) => {
-              const { title, sign, color } = getTransactionDetails(tx);
-              return (
-                <div key={tx.id} className="flex justify-between items-center p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(tx.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
-                    </p>
+
+        {history.length > 0 ? (
+          history.slice(0, 6).map((tx) => {
+            const { title, sign, color, icon } = getTransactionDetails(tx);
+            return (
+              <div key={tx.id} className="flex items-center justify-between px-5 py-4 transition hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100">{icon}</span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-800">{title}</p>
+                    <p className="text-xs text-slate-500">{new Date(tx.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p>
                   </div>
-                  <span className={`font-bold tracking-tight ml-4 ${color}`}>
-                    {sign} {formatMoney(tx.amount)}
-                  </span>
                 </div>
-              )
-            })
-          ) : (
-            <div className="p-8 text-center flex flex-col items-center">
-              <span className="text-3xl mb-2">📭</span>
-              <p className="text-gray-800 font-medium">Aún no hay actividad</p>
-              <p className="text-gray-500 text-sm mt-1">Tus últimos movimientos aparecerán acá.</p>
-            </div>
-          )}
-        </div>
-      </div>
+                <span className={`ml-3 font-bold ${color}`}>{sign} {formatMoney(tx.amount)}</span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-10 text-center">
+            <p className="text-3xl">📭</p>
+            <p className="mt-2 font-semibold text-slate-800">Aún no hay actividad</p>
+            <p className="text-sm text-slate-500">Tus movimientos recientes aparecerán acá.</p>
+          </div>
+        )}
+      </section>
     </div>
+  );
+}
+
+function QuickLink({ to, icon, label }: { to: string; icon: string; label: string }) {
+  return (
+    <Link to={to} className="group rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50">
+      <div className="text-2xl">{icon}</div>
+      <p className="mt-2 text-xs font-bold uppercase tracking-wider text-slate-700 group-hover:text-blue-700">{label}</p>
+    </Link>
   );
 }
