@@ -19,7 +19,7 @@ export const fetchHistory = createAsyncThunk<{ transactions: Transaction[] }, vo
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await api.get('/wallet/history');
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error al cargar historial');
     }
@@ -31,7 +31,7 @@ export const deposit = createAsyncThunk<any, number, { rejectValue: string }>(
   async (amount, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/wallet/deposit', { amount });
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error en depósito');
     }
@@ -43,7 +43,7 @@ export const withdraw = createAsyncThunk<any, number, { rejectValue: string }>(
   async (amount, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/wallet/withdraw', { amount });
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error en retiro');
     }
@@ -55,7 +55,7 @@ export const transfer = createAsyncThunk<any, { targetAlias: string; amount: num
   async (payload, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/wallet/transfer', payload);
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error en transferencia');
     }

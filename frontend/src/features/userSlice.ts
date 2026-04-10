@@ -21,8 +21,8 @@ export const login = createAsyncThunk<AuthResponse, any, { rejectValue: string }
   async (credentials, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/users/login', credentials);
-      localStorage.setItem('token', data.data.token);
-      return data.data;
+      localStorage.setItem('token', data.token);
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error en login');
     }
@@ -34,7 +34,7 @@ export const getMe = createAsyncThunk<{ user: User }, void, { rejectValue: strin
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await api.get('/users/me');
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error al obtener perfil');
     }
@@ -46,7 +46,7 @@ export const updateProfile = createAsyncThunk<{ user: User }, Partial<User>, { r
   async (updateData, { rejectWithValue }) => {
     try {
       const { data } = await api.put('/users/profile', updateData);
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error al actualizar');
     }

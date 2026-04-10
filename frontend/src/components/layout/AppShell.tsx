@@ -24,9 +24,9 @@ export default function AppShell() {
 
   return (
     <div className="min-h-dvh flex flex-col md:flex-row bg-gray-50">
-      <header className="px-4 py-3 bg-blue-600 text-white shadow-md md:px-6 md:py-4">
+      {/* <header className="px-4 py-3 bg-blue-600 text-white shadow-md md:px-6 md:py-4">
         <div className="text-xs opacity-80 md:text-sm">Saldo disponible</div>
-      </header>
+      </header> */}
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200 shadow-sm">
