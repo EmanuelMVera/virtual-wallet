@@ -1,26 +1,26 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { getMe } from '../../features/userSlice';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Inicio', icon: '🏠' },
   { to: '/activity', label: 'Movimientos', icon: '📊' },
-  { to: '/pay', label: 'Pagar', icon: '💸' },
-  { to: '/add-money', label: 'Recargar', icon: '➕' },
+  { to: '/transfer', label: 'Transferir', icon: '💸' },
+  { to: '/add-money', label: 'Ingresar', icon: '➕' },
+  { to: '/withdraw', label: 'Retirar', icon: '🏧' },
   { to: '/profile', label: 'Perfil', icon: '👤' },
 ];
 
 export default function AppShell() {
-  const { pathname } = useLocation();
   const dispatch = useAppDispatch();
-  const acc = useAppSelector((s) => s.user);
+  const { user, token } = useAppSelector((s) => s.user);
 
   useEffect(() => {
-    if (!acc) dispatch(getMe());
-  }, [acc, dispatch]);
-
-  const isActive = (to: string) => pathname === to || pathname.startsWith(to);
+    if (!user && token) {
+      dispatch(getMe());
+    }
+  }, [user, token, dispatch]);
 
   return (
     <div className="min-h-dvh flex flex-col md:flex-row bg-gray-50">
@@ -36,9 +36,9 @@ export default function AppShell() {
                 <li key={item.to}>
                   <NavLink
                     to={item.to}
-                    className={({ isActive: active }) =>
+                    className={({ isActive }) =>
                       `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        active
+                        isActive
                           ? 'bg-blue-50 text-blue-600 font-medium border-l-4 border-blue-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`
@@ -61,16 +61,14 @@ export default function AppShell() {
       </div>
 
       <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <ul className="grid grid-cols-5 gap-0">
+        <ul className="grid grid-cols-6 gap-0">
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
-                className={({ isActive: active }) =>
+                className={({ isActive }) =>
                   `flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors ${
-                    active
-                      ? 'text-blue-600 font-semibold'
-                      : 'text-gray-600 hover:text-gray-800'
+                    isActive ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:text-gray-800'
                   }`
                 }
               >

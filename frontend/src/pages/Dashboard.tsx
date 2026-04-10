@@ -1,43 +1,40 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTransactions } from '../hooks/useTransaction';
-import { useAppSelector } from '../app/hooks';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { fetchHistory } from '../features/transactionSlice';
 import { formatMoney } from '../utils/format';
 
 export default function Dashboard() {
-  const { user } = useAppSelector(state => state.user);
-  const { transactions, fetchTransactions } = useTransactions();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.user);
+  const { history } = useAppSelector((state) => state.transaction);
 
   useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+    dispatch(fetchHistory());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
-      {/* Hero saldo */}
       <div className="bg-[#009EE3] text-white pt-8 pb-14 px-4">
         <div className="mx-auto max-w-screen-sm">
           <p className="text-sm opacity-90">Dinero disponible</p>
-          <h2 className="text-4xl font-bold mt-1">
-            {user ? formatMoney(user.balance) : 'Cargando...'}
-          </h2>
+          <h2 className="text-4xl font-bold mt-1">{user ? formatMoney(user.balance) : 'Cargando...'}</h2>
         </div>
       </div>
 
-      {/* Acciones rápidas */}
       <div className="mx-auto w-full max-w-screen-sm px-4 -mt-8 relative z-10">
         <div className="grid grid-cols-4 gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
           <Link to="/transfer" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
             <div className="bg-gray-100 p-3 rounded-full text-xl">💸</div>
             <span className="text-xs font-semibold">Transferir</span>
           </Link>
-          <Link to="/pay" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
-            <div className="bg-gray-100 p-3 rounded-full text-xl">🛒</div>
-            <span className="text-xs font-semibold">Pagar</span>
-          </Link>
           <Link to="/add-money" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
             <div className="bg-gray-100 p-3 rounded-full text-xl">💳</div>
             <span className="text-xs font-semibold">Ingresar</span>
+          </Link>
+          <Link to="/withdraw" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
+            <div className="bg-gray-100 p-3 rounded-full text-xl">🏧</div>
+            <span className="text-xs font-semibold">Retirar</span>
           </Link>
           <Link to="/activity" className="flex flex-col items-center gap-2 text-gray-700 hover:text-blue-600">
             <div className="bg-gray-100 p-3 rounded-full text-xl">📊</div>
@@ -46,12 +43,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Últimas transacciones */}
       <div className="mx-auto w-full max-w-screen-sm px-4 py-8">
         <h3 className="font-bold text-gray-800 mb-4">Última actividad</h3>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {transactions.length > 0 ? (
-            transactions.slice(0, 5).map((tx: any) => (
+          {history.length > 0 ? (
+            history.slice(0, 5).map((tx) => (
               <div key={tx.id} className="flex justify-between items-center p-4 border-b border-gray-50 last:border-0">
                 <div>
                   <p className="text-sm font-semibold text-gray-800">
@@ -65,9 +61,7 @@ export default function Dashboard() {
               </div>
             ))
           ) : (
-            <div className="p-6 text-center text-gray-500 text-sm">
-              Aún no tenés movimientos recientes.
-            </div>
+            <div className="p-6 text-center text-gray-500 text-sm">Aún no tenés movimientos recientes.</div>
           )}
         </div>
       </div>
