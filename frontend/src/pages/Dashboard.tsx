@@ -14,7 +14,7 @@ export default function Dashboard() {
   }, [dispatch]);
 
   const getTransactionDetails = (tx: any) => {
-    const isSender = tx.senderDni === user?.dni;
+    const isSender = tx.senderId === user?.id;
     if (tx.type === 'load' || tx.type === 'deposit') return { title: 'Ingreso', sign: '+', color: 'text-green-600' };
     if (tx.type === 'withdraw') return { title: 'Retiro', sign: '-', color: 'text-gray-900' };
     

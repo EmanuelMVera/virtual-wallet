@@ -18,6 +18,7 @@ export interface Transaction {
 }
 
 export interface User {
+  id: number;
   dni: string;
   firstName: string;
   lastName: string;

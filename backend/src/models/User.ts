@@ -2,6 +2,7 @@ import { Model, DataTypes, Sequelize } from "sequelize";
 import bcrypt from "bcryptjs";
 
 interface UserAttributes {
+  id: number;
   dni: string;
   firstName: string;
   lastName: string;
@@ -13,6 +14,7 @@ interface UserAttributes {
 }
 
 export class User extends Model<UserAttributes> implements UserAttributes {
+  declare id: number;
   declare dni: string;
   declare firstName: string;
   declare lastName: string;
@@ -41,11 +43,15 @@ export class User extends Model<UserAttributes> implements UserAttributes {
 export default (sequelize: Sequelize) => {
   User.init(
     {
+      id: { 
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       dni: {
         type: DataTypes.STRING,
-        primaryKey: true,
         allowNull: false,
-        unique: true,
+        unique: true, 
       },
       firstName: {
         type: DataTypes.STRING,
@@ -86,6 +92,11 @@ export default (sequelize: Sequelize) => {
       tableName: "users",
       timestamps: true,
       hooks: {
+        beforeValidate: (user) => {
+          if (user.dni) {
+            user.dni = user.dni.toString().replace(/\D/g, ""); 
+          }
+        },
         beforeCreate: async (user) => {
           const email = user.email?.toLowerCase();
           if (email) user.email = email;
@@ -99,6 +110,9 @@ export default (sequelize: Sequelize) => {
           if (user.changed("password") && user.password) {
             user.password = await bcrypt.hash(user.password, 10);
           }
+          if (user.changed("dni") && user.dni) {
+             user.dni = user.dni.toString().replace(/\D/g, "");
+           }
         },
       },
     }

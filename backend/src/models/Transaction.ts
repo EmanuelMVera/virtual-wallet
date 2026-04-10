@@ -2,8 +2,8 @@ import { Model, DataTypes, Sequelize } from "sequelize";
 
 interface TransactionAttributes {
   id: number;
-  senderDni: string | null;
-  receiverDni: string;
+  senderId: number | null;
+  receiverId: number;
   amount: number;
   type: "load" | "withdraw" | "transfer";
   createdAt: Date;
@@ -14,21 +14,19 @@ export class Transaction
   implements TransactionAttributes
 {
   declare id: number;
-  declare senderDni: string | null;
-  declare receiverDni: string;
+  declare senderId: number | null;
+  declare receiverId: number;
   declare amount: number;
   declare type: "load" | "withdraw" | "transfer";
   declare createdAt: Date;
 
   static associate(models: any) {
     this.belongsTo(models.User, {
-      foreignKey: "senderDni",
-      targetKey: "dni",
+      foreignKey: "senderId",
       as: "sender",
     });
     this.belongsTo(models.User, {
-      foreignKey: "receiverDni",
-      targetKey: "dni",
+      foreignKey: "receiverId",
       as: "receiver",
     });
   }
@@ -42,20 +40,20 @@ export default (sequelize: Sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      senderDni: {
-        type: DataTypes.STRING,
+      senderId: {
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: {
           model: "users",
-          key: "dni",
+          key: "id",
         },
       },
-      receiverDni: {
-        type: DataTypes.STRING,
+      receiverId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "users",
-          key: "dni",
+          key: "id",
         },
       },
       amount: {

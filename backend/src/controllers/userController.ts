@@ -7,11 +7,7 @@ export const register = async (req: Request, res: Response) => {
     const result = await userService.registerUser(req.body);
     sendSuccess(res, result, undefined, 201);
   } catch (error: any) {
-    if (error.status && error.status !== 500) {
-      sendError(res, error.status, error.message);
-    } else {
-      sendError(res, 500, "Error del servidor durante el registro.");
-    }
+    sendError(res, error.status || 500, error.message || "Error durante el registro.");
   }
 };
 
@@ -20,11 +16,7 @@ export const login = async (req: Request, res: Response) => {
     const result = await userService.loginUser(req.body);
     sendSuccess(res, result);
   } catch (error: any) {
-    if (error.status && error.status !== 500) {
-      sendError(res, error.status, error.message);
-    } else {
-      sendError(res, 500, "Error del servidor durante el login.");
-    }
+    sendError(res, error.status || 500, error.message || "Error durante el login.");
   }
 };
 
@@ -34,11 +26,9 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getMe = async (req: Request, res: Response) => {
   try {
-    const dni = req.user?.dni;
-    if (!dni) {
-      return sendError(res, 401, "Unauthorized");
-    }
-    const result = await userService.getMe(dni);
+    const id = req.user?.id; // Ahora usamos id
+    if (!id) return sendError(res, 401, "Unauthorized");
+    const result = await userService.getMe(id);
     sendSuccess(res, result);
   } catch (error: any) {
     sendError(res, error.status || 500, error.message || "Error retrieving user");
@@ -47,10 +37,9 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const dni = req.user?.dni;
-    if (!dni) return sendError(res, 401, "Unauthorized");
-
-    const result = await userService.updateProfile(dni, req.body);
+    const id = req.user?.id;
+    if (!id) return sendError(res, 401, "Unauthorized");
+    const result = await userService.updateProfile(id, req.body);
     sendSuccess(res, result);
   } catch (err: any) {
     sendError(res, err.status || 500, err.message || "Error updating profile");
@@ -59,11 +48,9 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const updatePassword = async (req: Request, res: Response) => {
   try {
-    const dni = req.user?.dni;
-    if (!dni) return sendError(res, 401, "Unauthorized");
-
-    const { password } = req.body;
-    const result = await userService.updatePassword(dni, password);
+    const id = req.user?.id;
+    if (!id) return sendError(res, 401, "Unauthorized");
+    const result = await userService.updatePassword(id, req.body.password);
     sendSuccess(res, result);
   } catch (err: any) {
     sendError(res, err.status || 500, err.message || "Error updating password");

@@ -2,20 +2,20 @@ import { models } from "../db/db.js";
 import { Op } from "sequelize";
 import { generateToken } from "../utils/authUtils.js";
 
+const cleanDniString = (dni: any) => dni?.toString().replace(/\D/g, "");
+
 export const registerUser = async (payload: any) => {
   const { dni, firstName, lastName, email, phone, password, alias } = payload;
+  const cleanDni = cleanDniString(dni);
 
-  if (!dni || !firstName || !lastName || !email || !phone || !password) {
+  if (!cleanDni || !firstName || !lastName || !email || !phone || !password) {
     const error: any = new Error("Faltan datos obligatorios");
     error.status = 400;
     throw error;
   }
 
-  const conditions: any[] = [{ email }, { dni }];
-  if (alias) conditions.push({ alias });
-
   const existingUser = await models.User.findOne({
-    where: { [Op.or]: conditions },
+    where: { [Op.or]: [{ email }, { dni: cleanDni }, { alias: alias || '' }] },
   });
 
   if (existingUser) {
@@ -25,7 +25,7 @@ export const registerUser = async (payload: any) => {
   }
 
   const user = await models.User.create({
-    dni,
+    dni: cleanDni,
     firstName,
     lastName,
     email,
@@ -37,15 +37,7 @@ export const registerUser = async (payload: any) => {
 
   return {
     message: "Usuario registrado",
-    user: {
-      dni: user.dni,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      alias: user.alias,
-      balance: Number(user.balance),
-    },
+    user: { id: user.id, dni: user.dni, firstName: user.firstName, lastName: user.lastName, email: user.email, alias: user.alias, balance: 0 },
   };
 };
 
@@ -63,54 +55,28 @@ export const loginUser = async ({ email, password }: any) => {
     throw error;
   }
 
-  const token = generateToken({ dni: user.dni, email: user.email });
+  const token = generateToken({ id: user.id, email: user.email });
 
   return {
     message: "Inicio de sesión exitoso",
     token,
-    user: {
-      dni: user.dni,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      alias: user.alias,
-      balance: Number(user.balance),
-    },
+    user: { id: user.id, dni: user.dni, firstName: user.firstName, lastName: user.lastName, email: user.email, alias: user.alias, balance: Number(user.balance) },
   };
 };
 
-export const getMe = async (dni: string) => {
-  const user = await models.User.findByPk(dni, {
-    attributes: { exclude: ["password"] },
-  });
-
+export const getMe = async (id: number) => {
+  const user = await models.User.findByPk(id, { attributes: { exclude: ["password"] } });
   if (!user) {
     const error: any = new Error("Usuario no encontrado");
     error.status = 404;
     throw error;
   }
-
-  return {
-    user: {
-      dni: user.dni,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      alias: user.alias,
-      balance: Number(user.balance),
-    },
-  };
+  return { user: { id: user.id, dni: user.dni, firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone, alias: user.alias, balance: Number(user.balance) } };
 };
 
-export const updateProfile = async (dni: string, update: any) => {
-  const user = await models.User.findByPk(dni);
-  if (!user) {
-    const error: any = new Error("Usuario no encontrado");
-    error.status = 404;
-    throw error;
-  }
+export const updateProfile = async (id: number, update: any) => {
+  const user = await models.User.findByPk(id);
+  if (!user) throw { status: 404, message: "Usuario no encontrado" };
 
   const { firstName, lastName, email, phone, alias } = update;
   if (firstName) user.firstName = firstName;
@@ -120,36 +86,14 @@ export const updateProfile = async (dni: string, update: any) => {
   if (alias) user.alias = alias;
 
   await user.save();
-
-  return {
-    user: {
-      dni: user.dni,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      alias: user.alias,
-      balance: Number(user.balance),
-    },
-  };
+  return { user: { id: user.id, dni: user.dni, firstName: user.firstName, lastName: user.lastName, email: user.email, alias: user.alias, balance: Number(user.balance) } };
 };
 
-export const updatePassword = async (dni: string, password: string) => {
-  if (!password) {
-    const error: any = new Error("Password es requerido");
-    error.status = 400;
-    throw error;
-  }
-
-  const user = await models.User.findByPk(dni);
-  if (!user) {
-    const error: any = new Error("Usuario no encontrado");
-    error.status = 404;
-    throw error;
-  }
-
+export const updatePassword = async (id: number, password: string) => {
+  if (!password) throw { status: 400, message: "Password es requerido" };
+  const user = await models.User.findByPk(id);
+  if (!user) throw { status: 404, message: "Usuario no encontrado" };
   user.password = password;
   await user.save();
-
   return { message: "Contraseña actualizada" };
 };

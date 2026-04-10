@@ -23,7 +23,7 @@ export default function TransferPage() {
     const contacts = new Map();
     history.forEach((tx: any) => {
       // Si yo envié la transferencia, guardo al receptor
-      if (tx.type === 'transfer' && tx.senderDni === user?.dni && tx.receiver) {
+      if (tx.type === 'transfer' && tx.senderId === user?.id && tx.receiver) {
         const { alias, firstName, lastName } = tx.receiver;
         if (alias && !contacts.has(alias)) {
           contacts.set(alias, `${firstName} ${lastName}`);
