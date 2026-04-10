@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useEffect } from 'react';
 import { getMe } from '../../features/userSlice';
+import { formatMoney } from '../../utils/format';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Inicio', icon: '🏠' },
@@ -17,35 +18,36 @@ export default function AppShell() {
   const { user, token } = useAppSelector((s) => s.user);
 
   useEffect(() => {
-    if (!user && token) {
-      dispatch(getMe());
-    }
+    if (!user && token) dispatch(getMe());
   }, [user, token, dispatch]);
 
   return (
-    <div className="min-h-dvh flex flex-col md:flex-row bg-gray-50">
-      {/* <header className="px-4 py-3 bg-blue-600 text-white shadow-md md:px-6 md:py-4">
-        <div className="text-xs opacity-80 md:text-sm">Saldo disponible</div>
-      </header> */}
+    <div className="min-h-dvh md:p-4">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1300px] overflow-hidden rounded-none border border-slate-200/70 bg-white/70 shadow-2xl shadow-blue-100/40 md:min-h-[92vh] md:rounded-3xl">
+        <aside className="hidden md:flex md:w-72 md:flex-col md:border-r md:border-slate-200/80 md:bg-slate-900 md:text-slate-100">
+          <div className="border-b border-slate-800 px-6 py-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Virtual Wallet</p>
+            <h2 className="mt-1 text-2xl font-black">Mi cuenta</h2>
+            <p className="mt-4 text-xs text-slate-400">Saldo disponible</p>
+            <p className="text-2xl font-bold text-cyan-300">{formatMoney(user?.balance ?? 0)}</p>
+          </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200 shadow-sm">
-          <nav className="flex-1 py-6 px-3">
+          <nav className="flex-1 px-4 py-5">
             <ul className="space-y-2">
               {NAV_ITEMS.map((item) => (
                 <li key={item.to}>
                   <NavLink
                     to={item.to}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      `group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
                         isActive
-                          ? 'bg-blue-50 text-blue-600 font-medium border-l-4 border-blue-600'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-blue-500 text-white shadow-lg shadow-blue-600/30'
+                          : 'text-slate-200 hover:bg-slate-800 hover:text-white'
                       }`
                     }
                   >
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="text-sm md:text-base">{item.label}</span>
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
                   </NavLink>
                 </li>
               ))}
@@ -53,27 +55,42 @@ export default function AppShell() {
           </nav>
         </aside>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 pb-20 md:pb-6 max-w-full">
-            <Outlet />
-          </div>
-        </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="soft-glass sticky top-0 z-20 border-b border-slate-200/80 px-4 py-3 md:px-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Panel financiero</p>
+                <p className="text-sm font-semibold text-slate-700">Gestioná tu dinero con una vista clara</p>
+              </div>
+              <div className="rounded-xl bg-blue-50 px-3 py-2 text-right">
+                <p className="text-xs text-slate-500">Disponible</p>
+                <p className="text-sm font-bold text-blue-700">{formatMoney(user?.balance ?? 0)}</p>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto">
+            <div className="page-shell pb-24 md:pb-6">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
 
-      <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <ul className="grid grid-cols-6 gap-0">
+      <nav className="soft-glass fixed bottom-3 left-3 right-3 z-30 rounded-2xl border border-slate-200/80 p-1.5 shadow-xl md:hidden">
+        <ul className="grid grid-cols-6 gap-1">
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors ${
-                    isActive ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:text-gray-800'
+                  `flex flex-col items-center justify-center rounded-xl px-1 py-2 text-[11px] font-semibold transition ${
+                    isActive ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
                   }`
                 }
               >
-                <span className="text-lg mb-1">{item.icon}</span>
-                <span className="truncate max-w-[60px]">{item.label}</span>
+                <span className="text-base">{item.icon}</span>
+                <span className="truncate">{item.label}</span>
               </NavLink>
             </li>
           ))}

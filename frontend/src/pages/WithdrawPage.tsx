@@ -25,15 +25,19 @@ export default function WithdrawPage() {
   };
 
   return (
-    <div className="mx-auto max-w-screen-sm p-4">
-      <h1 className="text-2xl font-bold mb-4">Retirar dinero</h1>
-      <form onSubmit={onSubmit} className="space-y-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+    <div className="space-y-4">
+      <div>
+        <h1 className="page-title">Retirar dinero</h1>
+        <p className="page-subtitle mt-1">Retirá saldo de tu cuenta de forma segura.</p>
+      </div>
+
+      <form onSubmit={onSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4 max-w-xl">
         <div>
-          <label className="text-sm text-gray-600">Monto</label>
-          <input type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full border rounded-lg p-2" required />
+          <label className="mb-1 block text-sm font-medium text-slate-700">Monto</label>
+          <input type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" required />
         </div>
-        <button disabled={loading} className="w-full rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800 disabled:opacity-60">
-          {loading ? 'Procesando…' : 'Retirar'}
+        <button disabled={loading} className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+          {loading ? 'Procesando…' : 'Confirmar retiro'}
         </button>
       </form>
     </div>

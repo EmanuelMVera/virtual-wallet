@@ -48,63 +48,41 @@ export default function ProfilePage() {
   if (!user) return <div className="p-4">No hay sesión activa.</div>;
 
   return (
-    <div className="mx-auto max-w-screen-sm p-4 space-y-5">
-      <div className="mx-auto w-full max-w-md rounded-2xl bg-blue-600 py-5 text-center text-white shadow">
-        <div className="text-sm opacity-90">Saldo disponible</div>
-        <div className="mt-1 text-3xl font-semibold">{formatMoney(user.balance ?? 0)}</div>
-      </div>
+    <div className="space-y-5">
+      <section className="rounded-3xl bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white shadow-xl">
+        <p className="text-sm text-slate-300">Saldo disponible</p>
+        <p className="mt-1 text-4xl font-black">{formatMoney(user.balance ?? 0)}</p>
+      </section>
 
-      <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow ring-1 ring-black/5">
-        <div className="flex flex-col items-center">
-          <div className="mb-3 grid h-16 w-16 place-items-center rounded-full bg-blue-600 text-white text-xl font-semibold">
-            {user.firstName?.[0]?.toUpperCase()}
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-5 flex items-center gap-4">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">{user.firstName?.[0]?.toUpperCase()}</div>
+          <div>
+            <p className="text-lg font-bold text-slate-900">{user.firstName} {user.lastName}</p>
+            <p className="text-sm text-slate-500">Alias: {user.alias}</p>
           </div>
-          {edit ? (
-            <div className="w-full space-y-2 mb-2">
-              <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="border p-2 rounded w-full" placeholder="Nombre" />
-              <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="border p-2 rounded w-full" placeholder="Apellido" />
-            </div>
-          ) : (
-            <div className="text-lg font-medium">
-              {user.firstName} {user.lastName}
-            </div>
-          )}
-          <div className="text-sm text-gray-500 mb-2">{user.alias}</div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-2">
+        <div className="space-y-3">
           {edit ? (
-            <button onClick={handleSaveProfile} className="bg-blue-600 text-white p-3 rounded-xl font-semibold">
-              Guardar
-            </button>
+            <>
+              <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Nombre" />
+              <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Apellido" />
+              <button onClick={handleSaveProfile} className="w-full rounded-xl bg-blue-600 p-3 font-semibold text-white">Guardar cambios</button>
+            </>
           ) : (
-            <button onClick={() => setEdit(true)} className="bg-blue-600 text-white p-3 rounded-xl font-semibold">
-              Editar Perfil
-            </button>
+            <button onClick={() => setEdit(true)} className="w-full rounded-xl bg-blue-600 p-3 font-semibold text-white">Editar perfil</button>
           )}
 
-          <div className="border-t pt-3 mt-2">
-            <label className="block text-sm text-gray-600 mb-1">Nueva contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border p-2 rounded w-full"
-              placeholder="********"
-            />
-            <button onClick={handlePasswordChange} className="mt-2 w-full bg-gray-900 text-white p-2 rounded-lg font-semibold">
-              Actualizar contraseña
-            </button>
+          <div className="border-t border-slate-200 pt-4">
+            <label className="mb-1 block text-sm font-medium text-slate-700">Nueva contraseña</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="********" />
+            <button onClick={handlePasswordChange} className="mt-2 w-full rounded-xl bg-slate-900 p-3 font-semibold text-white">Actualizar contraseña</button>
           </div>
 
-          <button
-            onClick={() => dispatch(logout())}
-            className="bg-gray-100 text-gray-900 p-3 rounded-xl font-semibold hover:bg-gray-200"
-          >
-            Cerrar sesión
-          </button>
+          <button onClick={() => dispatch(logout())} className="w-full rounded-xl bg-slate-100 p-3 font-semibold text-slate-900 hover:bg-slate-200">Cerrar sesión</button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
