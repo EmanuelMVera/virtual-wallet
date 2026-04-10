@@ -1,12 +1,20 @@
 export type TransactionType = "load" | "withdraw" | "transfer";
 
+export interface TransactionParty {
+  firstName: string;
+  lastName: string;
+  alias: string;
+}
+
 export interface Transaction {
   id: number;
   senderDni: string | null;
   receiverDni: string;
   amount: number;
   type: TransactionType;
-  createdAt: string; // El backend envía ISO String
+  createdAt: string;
+  sender?: TransactionParty | null;
+  receiver?: TransactionParty | null;
 }
 
 export interface User {
@@ -19,13 +27,11 @@ export interface User {
   balance: number;
 }
 
-// Para las respuestas de Login/Registro
 export interface AuthResponse {
   token: string;
   user: User;
 }
 
-// Utilidad para manejar errores del backend
 export interface ApiError {
   message: string;
 }

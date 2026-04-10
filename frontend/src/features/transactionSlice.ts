@@ -15,28 +15,52 @@ const initialState: TransactionState = {
 };
 
 export const fetchHistory = createAsyncThunk<{ transactions: Transaction[] }, void, { rejectValue: string }>(
-  'wallet/history', async (_, { rejectWithValue }) => {
+  'wallet/history',
+  async (_, { rejectWithValue }) => {
     try {
       const { data } = await api.get('/wallet/history');
-      return data.data; // { transactions: [...] }
+      return data.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Error al cargar historial');
     }
-});
+  }
+);
 
-export const processTransaction = createAsyncThunk<
-  any, 
-  { type: 'deposit' | 'withdraw' | 'transfer', payload: any }, 
-  { rejectValue: string }
->('wallet/process', async ({ type, payload }, { rejectWithValue }) => {
+export const deposit = createAsyncThunk<any, number, { rejectValue: string }>(
+  'wallet/deposit',
+  async (amount, { rejectWithValue }) => {
     try {
-      // Mapea a /wallet/deposit, /wallet/withdraw o /wallet/transfer
-      const { data } = await api.post(`/wallet/${type}`, payload);
+      const { data } = await api.post('/wallet/deposit', { amount });
       return data.data;
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Error en la operación');
+      return rejectWithValue(err.response?.data?.message || 'Error en depósito');
     }
-});
+  }
+);
+
+export const withdraw = createAsyncThunk<any, number, { rejectValue: string }>(
+  'wallet/withdraw',
+  async (amount, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/wallet/withdraw', { amount });
+      return data.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || 'Error en retiro');
+    }
+  }
+);
+
+export const transfer = createAsyncThunk<any, { targetAlias: string; amount: number }, { rejectValue: string }>(
+  'wallet/transfer',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/wallet/transfer', payload);
+      return data.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || 'Error en transferencia');
+    }
+  }
+);
 
 const transactionSlice = createSlice({
   name: 'transactions',
@@ -49,12 +73,24 @@ const transactionSlice = createSlice({
         state.history = action.payload.transactions;
       })
       .addMatcher(
-        (action) => action.type.endsWith('/pending'),
-        (state) => { state.loading = true; state.error = null; }
+        (action) => action.type.startsWith('wallet/') && action.type.endsWith('/pending'),
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
       )
       .addMatcher(
-        (action) => action.type.endsWith('/rejected'),
-        (state, action: any) => { state.loading = false; state.error = action.payload as string; }
+        (action) => action.type.startsWith('wallet/') && action.type.endsWith('/rejected'),
+        (state, action: any) => {
+          state.loading = false;
+          state.error = action.payload as string;
+        }
+      )
+      .addMatcher(
+        (action) => action.type.startsWith('wallet/') && action.type.endsWith('/fulfilled'),
+        (state) => {
+          state.loading = false;
+        }
       );
   },
 });
