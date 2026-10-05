@@ -8,8 +8,8 @@ export interface TransactionParty {
 
 export interface Transaction {
   id: number;
-  senderDni: string | null;
-  receiverDni: string;
+  senderId: number | null;
+  receiverId: number;
   amount: number;
   type: TransactionType;
   createdAt: string;

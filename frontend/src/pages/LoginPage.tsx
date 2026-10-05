@@ -25,6 +25,11 @@ export default function LoginPage() {
     }
   };
 
+  const useDemoAccount = () => {
+    setEmail('demo@virtualwallet.com');
+    setPassword('Demo1234!');
+  };
+
   return (
     <div className="min-h-dvh px-4 py-8">
       <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white/90 shadow-2xl shadow-blue-100/40 md:grid-cols-2">
@@ -56,6 +61,22 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
+
+          <div className="mt-5 rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">Cuenta demo</p>
+            <p className="mt-1 text-sm text-slate-600">Probá la aplicación sin registrarte.</p>
+            <div className="mt-2 text-sm text-slate-700">
+              <p>Email: <span className="font-semibold">demo@virtualwallet.com</span></p>
+              <p>Contraseña: <span className="font-semibold">Demo1234!</span></p>
+            </div>
+            <button
+              type="button"
+              onClick={useDemoAccount}
+              className="mt-3 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              Usar cuenta demo
+            </button>
+          </div>
 
           <p className="mt-5 border-t border-slate-200 pt-4 text-sm text-slate-600">
             ¿No tenés cuenta?{' '}

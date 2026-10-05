@@ -1,6 +1,7 @@
 import { models } from "../db/db.js";
 import { Op } from "sequelize";
 import { generateToken } from "../utils/authUtils.js";
+import { DEMO_EMAIL } from "../config/demoConfig.js";
 
 const cleanDniString = (dni: any) => dni?.toString().replace(/\D/g, "");
 
@@ -78,6 +79,10 @@ export const updateProfile = async (id: number, update: any) => {
   const user = await models.User.findByPk(id);
   if (!user) throw { status: 404, message: "Usuario no encontrado" };
 
+  if (user.email === DEMO_EMAIL) {
+    throw { status: 403, message: "La cuenta demo no permite modificar sus credenciales." };
+  }
+
   const { firstName, lastName, email, phone, alias } = update;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
@@ -93,6 +98,11 @@ export const updatePassword = async (id: number, password: string) => {
   if (!password) throw { status: 400, message: "Password es requerido" };
   const user = await models.User.findByPk(id);
   if (!user) throw { status: 404, message: "Usuario no encontrado" };
+
+  if (user.email === DEMO_EMAIL) {
+    throw { status: 403, message: "La cuenta demo no permite modificar sus credenciales." };
+  }
+
   user.password = password;
   await user.save();
   return { message: "Contraseña actualizada" };

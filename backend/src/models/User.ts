@@ -30,11 +30,11 @@ export class User extends Model<UserAttributes> implements UserAttributes {
 
   static associate(models: any) {
     this.hasMany(models.Transaction, {
-      foreignKey: "senderDni",
+      foreignKey: "senderId",
       as: "sentTransactions",
     });
     this.hasMany(models.Transaction, {
-      foreignKey: "receiverDni",
+      foreignKey: "receiverId",
       as: "receivedTransactions",
     });
   }

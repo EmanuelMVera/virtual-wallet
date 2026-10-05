@@ -47,6 +47,8 @@ export default function ProfilePage() {
 
   if (!user) return <div className="p-4">No hay sesión activa.</div>;
 
+  const isDemo = user.email === 'demo@virtualwallet.com';
+
   return (
     <div className="space-y-5">
       <section className="rounded-3xl bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white shadow-xl">
@@ -64,7 +66,11 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-3">
-          {edit ? (
+          {isDemo ? (
+            <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-700">
+              La cuenta demo no permite editar estos datos.
+            </p>
+          ) : edit ? (
             <>
               <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Nombre" />
               <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Apellido" />
@@ -74,11 +80,13 @@ export default function ProfilePage() {
             <button onClick={() => setEdit(true)} className="w-full rounded-xl bg-blue-600 p-3 font-semibold text-white">Editar perfil</button>
           )}
 
-          <div className="border-t border-slate-200 pt-4">
-            <label className="mb-1 block text-sm font-medium text-slate-700">Nueva contraseña</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="********" />
-            <button onClick={handlePasswordChange} className="mt-2 w-full rounded-xl bg-slate-900 p-3 font-semibold text-white">Actualizar contraseña</button>
-          </div>
+          {!isDemo && (
+            <div className="border-t border-slate-200 pt-4">
+              <label className="mb-1 block text-sm font-medium text-slate-700">Nueva contraseña</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="********" />
+              <button onClick={handlePasswordChange} className="mt-2 w-full rounded-xl bg-slate-900 p-3 font-semibold text-white">Actualizar contraseña</button>
+            </div>
+          )}
 
           <button onClick={() => dispatch(logout())} className="w-full rounded-xl bg-slate-100 p-3 font-semibold text-slate-900 hover:bg-slate-200">Cerrar sesión</button>
         </div>

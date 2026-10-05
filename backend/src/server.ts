@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import app from './app.js';
 import initDatabase from './db/db.js';
+import { seedDemoData } from './seeds/demoSeed.js';
 
 dotenv.config();
 
@@ -9,7 +10,11 @@ const PORT = parseInt(process.env.PORT ?? '3000', 10);
 const HOST = process.env.HOST || 'localhost';
 
 initDatabase()
-  .then(() => {
+  .then(async () => {
+    if (process.env.SEED_DEMO_DATA === 'true') {
+      await seedDemoData();
+    }
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running at http://${HOST}:${PORT}/api`);
     });
